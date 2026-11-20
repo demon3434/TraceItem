@@ -1,0 +1,54 @@
+name: traceitem_mobile
+description: "图觅 (TraceItem) 移动端跨平台应用"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI 框架与设计底座 (AGENTS.md: 强制基于 shadcn_ui 与 Lucide Icons)
+  shadcn_ui: ^0.58.0
+  cupertino_icons: ^1.0.8
+
+  # 网络与存储
+  dio: ^5.4.1
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.2.2
+  sqflite: ^2.4.1
+  path_provider: ^2.1.2
+  connectivity_plus: ^6.1.0
+  nsd: ^4.0.3
+
+  # 端侧硬件压缩与多媒体流水线 (ADR 0003)
+  image: ^4.1.7
+  intl: ^0.20.3
+  uuid: ^4.3.3
+
+  # 生产级多模态采集、音视频录制与回放 (ADR 0003, ADR 0004)
+  image_picker: ^1.1.2
+  record: ^5.1.2
+  audioplayers: ^6.0.0
+  video_player: ^2.9.1
+  speech_to_text: ^7.0.0
+  sherpa_onnx: ^2.0.1
+  archive: ^4.0.0
+  crypto: ^3.0.6
+  cached_network_image: ^3.3.1
+  video_compress: ^3.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+dependency_overrides:
+  record_platform_interface: 1.2.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/logo.png

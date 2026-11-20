@@ -1,0 +1,204 @@
+{
+  "dopamine": [
+    {
+      "id": "warm-orange",
+      "name": "阳光暖橙",
+      "icon": "🍊",
+      "category": "dopamine",
+      "desc": "温暖活力暖阳橙，元气满满",
+      "primary": "#F97316",
+      "secondary": "#F59E0B",
+      "lightBg": "#FFF7ED",
+      "lightBorder": "#FED7AA",
+      "darkText": "#9A3412",
+      "pageBg": "#FAF9F6",
+      "gradient": "from-orange-500 to-amber-400"
+    },
+    {
+      "id": "strawberry-sweet",
+      "name": "草莓甜心",
+      "icon": "🍓",
+      "category": "dopamine",
+      "desc": "甜美草莓粉红，温馨治愈",
+      "primary": "#F43F5E",
+      "secondary": "#FB7185",
+      "lightBg": "#FFF1F2",
+      "lightBorder": "#FECDD3",
+      "darkText": "#9F1239",
+      "pageBg": "#FFF5F6",
+      "gradient": "from-rose-500 to-pink-400"
+    },
+    {
+      "id": "mint-lemon",
+      "name": "薄荷清柠",
+      "icon": "🍃",
+      "category": "dopamine",
+      "desc": "清爽薄荷青柠绿，护眼舒心",
+      "primary": "#10B981",
+      "secondary": "#14B8A6",
+      "lightBg": "#F0FDF4",
+      "lightBorder": "#A7F3D0",
+      "darkText": "#065F46",
+      "pageBg": "#F4FBF7",
+      "gradient": "from-emerald-500 to-teal-400"
+    },
+    {
+      "id": "starry-castle",
+      "name": "星空城堡",
+      "icon": "🌌",
+      "category": "dopamine",
+      "desc": "静谧梦幻星空靛蓝，优雅深邃",
+      "primary": "#6366F1",
+      "secondary": "#38BDF8",
+      "lightBg": "#EEF2FF",
+      "lightBorder": "#C7D2FE",
+      "darkText": "#3730A3",
+      "pageBg": "#F6F8FD",
+      "gradient": "from-indigo-500 to-sky-400"
+    },
+    {
+      "id": "elegant-wood",
+      "name": "雅致原木",
+      "icon": "🪵",
+      "category": "dopamine",
+      "desc": "温润素雅原木大地色，经典耐看",
+      "primary": "#B45309",
+      "secondary": "#D97706",
+      "lightBg": "#FEF3C7",
+      "lightBorder": "#FDE68A",
+      "darkText": "#78350F",
+      "pageBg": "#F9F8F6",
+      "gradient": "from-amber-700 to-amber-500"
+    },
+    {
+      "id": "lavender-dream",
+      "name": "梦幻薰衣草",
+      "icon": "🪻",
+      "category": "dopamine",
+      "desc": "轻柔浪漫薰衣草紫，灵感迸发",
+      "primary": "#A855F7",
+      "secondary": "#818CF8",
+      "lightBg": "#FAF5FF",
+      "lightBorder": "#E9D5FF",
+      "darkText": "#6B21A8",
+      "pageBg": "#FAF7FD",
+      "gradient": "from-purple-500 to-indigo-400"
+    },
+    {
+      "id": "cyber-neon",
+      "name": "赛博霓虹",
+      "icon": "⚡",
+      "category": "dopamine",
+      "desc": "电光蓝紫霓虹感，现代极客",
+      "primary": "#06B6D4",
+      "secondary": "#3B82F6",
+      "lightBg": "#ECFEFF",
+      "lightBorder": "#A5F3FC",
+      "darkText": "#155E75",
+      "pageBg": "#F3FAFC",
+      "gradient": "from-cyan-500 to-blue-500"
+    }
+  ],
+  "shadcn": [
+    {
+      "id": "shadcn-blue",
+      "name": "科技湛蓝 (Blue)",
+      "icon": "🌊",
+      "category": "shadcn",
+      "primary": "#2563EB",
+      "gradient": "from-blue-600 to-blue-400",
+      "desc": "shadcn 官方经典蓝，稳重专业"
+    },
+    {
+      "id": "shadcn-green",
+      "name": "生机翠绿 (Green)",
+      "icon": "🌿",
+      "category": "shadcn",
+      "primary": "#16A34A",
+      "gradient": "from-green-600 to-emerald-400",
+      "desc": "shadcn 官方生机绿，自然清新"
+    },
+    {
+      "id": "shadcn-yellow",
+      "name": "活力明黄 (Yellow)",
+      "icon": "🍋",
+      "category": "shadcn",
+      "primary": "#CA8A04",
+      "gradient": "from-yellow-600 to-amber-400",
+      "desc": "shadcn 官方明黄色，明亮醒目"
+    },
+    {
+      "id": "shadcn-red",
+      "name": "热烈绯红 (Red)",
+      "icon": "🎈",
+      "category": "shadcn",
+      "primary": "#DC2626",
+      "gradient": "from-red-600 to-rose-400",
+      "desc": "shadcn 官方绯红色，热情张扬"
+    },
+    {
+      "id": "shadcn-rose",
+      "name": "玫瑰粉晶 (Rose)",
+      "icon": "🌹",
+      "category": "shadcn",
+      "primary": "#E11D48",
+      "gradient": "from-rose-600 to-pink-400",
+      "desc": "shadcn 官方玫瑰色，精致柔美"
+    },
+    {
+      "id": "shadcn-violet",
+      "name": "暮光紫罗兰 (Violet)",
+      "icon": "🔮",
+      "category": "shadcn",
+      "primary": "#7C3AED",
+      "gradient": "from-violet-600 to-purple-400",
+      "desc": "shadcn 官方紫罗兰，高贵现代"
+    },
+    {
+      "id": "shadcn-zinc",
+      "name": "极客精锌 (Zinc)",
+      "icon": "⚙️",
+      "category": "shadcn",
+      "primary": "#3F3F46",
+      "gradient": "from-zinc-700 to-zinc-500",
+      "desc": "shadcn 标杆锌灰，质感纯粹"
+    },
+    {
+      "id": "shadcn-slate",
+      "name": "岩石青板 (Slate)",
+      "icon": "🪨",
+      "category": "shadcn",
+      "primary": "#475569",
+      "gradient": "from-slate-700 to-slate-500",
+      "desc": "shadcn 蓝灰青板，深邃沉着"
+    },
+    {
+      "id": "shadcn-stone",
+      "name": "温润暖石 (Stone)",
+      "icon": "🧱",
+      "category": "shadcn",
+      "primary": "#57534E",
+      "gradient": "from-stone-700 to-stone-500",
+      "desc": "shadcn 暖调岩石，内敛质朴"
+    },
+    {
+      "id": "shadcn-gray",
+      "name": "极简冷灰 (Gray)",
+      "icon": "🌫️",
+      "category": "shadcn",
+      "primary": "#4B5563",
+      "gradient": "from-gray-700 to-gray-500",
+      "desc": "shadcn 经典冷灰，工业简约"
+    },
+    {
+      "id": "shadcn-neutral",
+      "name": "素雅中性 (Neutral)",
+      "icon": "🕊️",
+      "category": "shadcn",
+      "primary": "#525252",
+      "gradient": "from-neutral-700 to-neutral-500",
+      "desc": "shadcn 纯粹中性色，温和平静"
+    }
+  ]
+}
+

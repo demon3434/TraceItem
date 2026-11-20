@@ -1,0 +1,48 @@
+# 统一跨平台换行符规范，防止 Windows (GitHub Desktop) 与 Linux/Docker 容器间出现 CRLF 兼容问题
+
+# 默认文本文件在仓库中统一使用 LF
+* text=auto eol=lf
+
+# Linux Shell 脚本与容器配置强制 LF（否则在 Linux/Docker 中执行会报错）
+*.sh text eol=lf
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+
+# Windows 脚本保持 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 常见源码与配置文件统一 LF
+*.py text eol=lf
+*.dart text eol=lf
+*.vue text eol=lf
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# 二进制文件禁止换行符转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.svg binary
+*.mp4 binary
+*.m4a binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.tar binary
+*.gz binary
+*.zip binary
+*.apk binary
+*.db binary
+

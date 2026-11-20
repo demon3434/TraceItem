@@ -1,0 +1,53 @@
+schema: spec-driven
+
+# Project context (Global Constraints for OpenSpec Proposals, Designs & Tasks)
+context: |
+  Project Name: 图觅 (TraceItem)
+  
+  [CRITICAL ARCHITECTURE & CODE CONSTRAINTS]
+    - Code File Size Limit: No single source code file shall ever exceed 500 lines. Logic must be aggressively modularized into separate Routers, Services, Models, and Widgets.
+    - Database: SQLite 3 with WAL mode and FTS5 full-text search. No external database daemons (PostgreSQL/MySQL prohibited).
+    - Spatial Hierarchy: Maintained strictly up to Room level (House -> Room). Cabinets, drawers, and shelves MUST NOT be database entities (visually captured via photos/videos).
+    - User Privacy & Admin God View: Normal users have strictly independent private ledgers. Only Admin has the cross-user "God View" emergency item search.
+    - Media Compression & Industrial Storage: Client-side compression (JPEG <=1600px, AAC <=60s, x265 <=15s with moov faststart and 1s keyframes). Storage sharded by type and year/month (/data/media/{type}/{YYYY}/{MM}/{file}).
+    - Backup: Pure uncompressed TAR archive manual backup with historical backup pruning/cleanup. No cron backups, no ZIP compression.
+  - Android Release ABI: Mobile Android release APKs MUST target ARMv8 (`arm64-v8a`) exclusively (`--target-platform android-arm64` and `abiFilters += listOf("arm64-v8a")`).
+  - Shared Constants Single Source of Truth (SSOT): All cross-client hardcoded constants (category emojis & mappings, space emojis, dopamine themes, preset categories, media compression limits) MUST live in `shared/*.json`; Web imports `@shared/*.json` directly, while Mobile/Server consume generated files via `python scripts/sync_shared.py` (verified with `--check`). Duplicated hardcoding across clients is strictly prohibited.
+
+  [CRITICAL UI/UX & INTERACTION CONSTRAINTS]
+    - STRICT PROHIBITION OF NATIVE ALERTS: Never use browser native `alert()`, `confirm()`, or `prompt()`. Never use raw, unstyled system alerts.
+    - UNIFIED OVERLAYS & TOASTS: All modals, confirmations, and alerts must use beautifully designed custom overlay components (Web: `shadcn-vue` Dialog/Sheet/Sonner; Flutter: `ShadDialog`/`ShadSheet`/`ShadToaster`).
+    - UI AESTHETICS & KID-FRIENDLY:
+      * Base UI Framework: Flutter `shadcn_ui` (see .agents/skills/shadcn-ui-flutter/SKILL.md) and Web `shadcn-vue` + Tailwind CSS.
+      * Icons: 100% unified Lucide Icons across Web and Mobile.
+      * Shape: 18px ~ 24px soft rounded squircle cards with subtle shadows.
+      * Playful Themes: Vibrant Dopamine/Macaron themes (Warm Orange, Sweet Rose, Mint Green, Cosmic Violet, etc.).
+      * Spatial Totems: Rooms and categories must support Emoji totems (e.g. 🧸, 🚀, 🛋️) so children can recognize spaces instantly.
+
+  [CRITICAL DOCUMENTATION LANGUAGE CONSTRAINT]
+    - Simplified Chinese First: All OpenSpec planning documents (`proposal.md`, `design.md`, `tasks.md`, and `specs/**/spec.md` descriptions, requirements, and scenarios) MUST be written in Simplified Chinese (简体中文). Only preserve OpenSpec parser-required structural markers (`## Why`, `## What Changes`, `## Capabilities`, `## Impact`, `## Purpose`, `## ADDED Requirements`, `## MODIFIED Requirements`, `### Requirement:`, `#### Scenario:`, `- **WHEN**`, `- **THEN**`, and normative `SHALL`/`MUST` where required by `openspec validate`).
+
+# Per-artifact rules
+rules:
+  proposal:
+    - Write all content in Simplified Chinese (简体中文), keeping only required OpenSpec section headers.
+    - Keep proposals clear, modular, and adhering strictly to the ADRs and UI guidelines.
+    - Explicitly state UI components used (ShadDialog, ShadSheet, etc.) and confirm zero native alert/confirm.
+  specs:
+    - Write Purpose, Requirement descriptions, and Scenario WHEN/THEN clauses in Simplified Chinese (简体中文), preserving OpenSpec structural markers (`### Requirement:`, `#### Scenario:`, `**WHEN**`, `**THEN**`, `SHALL`/`MUST`).
+  design:
+    - Write all technical context, goals, decisions, and risks/trade-offs in Simplified Chinese (简体中文).
+  tasks:
+    - Write all task group headings and task descriptions in Simplified Chinese (简体中文).
+    - Enforce modular file splitting so each task produces files strictly under 500 lines.
+    - Ensure every UI task includes styled overlay dialogs and theme tokens.
+
+# Per-operation guidance
+operations:
+  apply:
+    guidance:
+      - Always verify line counts of created/modified files to ensure strict compliance with the <500 lines rule.
+      - Reject any code containing `window.alert`, `window.confirm`, `window.prompt`, or unstyled dialogs.
+  archive:
+    guidance:
+      - Summarize how all constraints (including the <500 lines rule and custom UI overlay rules) were honored.

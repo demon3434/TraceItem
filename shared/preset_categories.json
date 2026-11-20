@@ -1,0 +1,17 @@
+[
+  { "name": "常备药品", "icon": "💊", "sortOrder": 1 },
+  { "name": "证件票据", "icon": "📑", "sortOrder": 2 },
+  { "name": "数码配件", "icon": "🔌", "sortOrder": 3 },
+  { "name": "五金工具", "icon": "🧰", "sortOrder": 4 },
+  { "name": "儿童玩具", "icon": "🧸", "sortOrder": 5 },
+  { "name": "办公文具", "icon": "✏️", "sortOrder": 6 },
+  { "name": "厨房用品", "icon": "🍳", "sortOrder": 7 },
+  { "name": "食品干货", "icon": "🍵", "sortOrder": 8 },
+  { "name": "日用清洁", "icon": "🧼", "sortOrder": 9 },
+  { "name": "服饰鞋帽", "icon": "👔", "sortOrder": 10 },
+  { "name": "美妆个护", "icon": "💄", "sortOrder": 11 },
+  { "name": "运动户外", "icon": "⛺", "sortOrder": 12 },
+  { "name": "家居家纺", "icon": "🛋️", "sortOrder": 13 },
+  { "name": "闲置收藏", "icon": "📦", "sortOrder": 14 }
+]
+

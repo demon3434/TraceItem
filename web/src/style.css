@@ -1,0 +1,272 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  
+  /* 基础舒适字号基线 */
+  font-size: 15.5px;
+  line-height: 1.5;
+
+  /* 默认主题变量：阳光暖橙 */
+  --theme-primary: #f97316;
+  --theme-primary-hover: #ea580c;
+  --theme-primary-light: #fff7ed;
+  --theme-primary-border: #fed7aa;
+  --theme-primary-text: #9a3412;
+  --theme-bg: #FFFBF5;
+  --theme-shadow: rgba(249, 115, 22, 0.25);
+}
+
+/* --- 🌟 活力多巴胺色板 --- */
+[data-theme="warm-orange"] {
+  --theme-primary: #f97316;
+  --theme-primary-hover: #ea580c;
+  --theme-primary-light: #fff7ed;
+  --theme-primary-border: #fed7aa;
+  --theme-primary-text: #9a3412;
+  --theme-bg: #FFFBF5;
+  --theme-shadow: rgba(249, 115, 22, 0.25);
+}
+
+[data-theme="strawberry-sweet"] {
+  --theme-primary: #f43f5e;
+  --theme-primary-hover: #e11d48;
+  --theme-primary-light: #fff1f2;
+  --theme-primary-border: #fecdd3;
+  --theme-primary-text: #9f1239;
+  --theme-bg: #FFF5F7;
+  --theme-shadow: rgba(244, 63, 94, 0.25);
+}
+
+[data-theme="mint-lemon"] {
+  --theme-primary: #10b981;
+  --theme-primary-hover: #059669;
+  --theme-primary-light: #f0fdf4;
+  --theme-primary-border: #a7f3d0;
+  --theme-primary-text: #065f46;
+  --theme-bg: #F0FDF4;
+  --theme-shadow: rgba(16, 185, 129, 0.25);
+}
+
+[data-theme="starry-castle"] {
+  --theme-primary: #6366f1;
+  --theme-primary-hover: #4f46e5;
+  --theme-primary-light: #eef2ff;
+  --theme-primary-border: #c7d2fe;
+  --theme-primary-text: #3730a3;
+  --theme-bg: #F5F6FF;
+  --theme-shadow: rgba(99, 102, 241, 0.25);
+}
+
+[data-theme="elegant-wood"] {
+  --theme-primary: #b45309;
+  --theme-primary-hover: #92400e;
+  --theme-primary-light: #fef3c7;
+  --theme-primary-border: #fde68a;
+  --theme-primary-text: #78350f;
+  --theme-bg: #FAF8F5;
+  --theme-shadow: rgba(180, 83, 9, 0.25);
+}
+
+[data-theme="lavender-dream"] {
+  --theme-primary: #a855f7;
+  --theme-primary-hover: #9333ea;
+  --theme-primary-light: #faf5ff;
+  --theme-primary-border: #e9d5ff;
+  --theme-primary-text: #6b21a8;
+  --theme-bg: #FAF5FF;
+  --theme-shadow: rgba(168, 85, 247, 0.25);
+}
+
+[data-theme="cyber-neon"] {
+  --theme-primary: #06b6d4;
+  --theme-primary-hover: #0891b2;
+  --theme-primary-light: #ecfeff;
+  --theme-primary-border: #a5f3fc;
+  --theme-primary-text: #155e75;
+  --theme-bg: #F0FDFA;
+  --theme-shadow: rgba(6, 182, 212, 0.25);
+}
+
+/* --- 🏛️ shadcn 官方 12 经典色系 --- */
+[data-theme="shadcn-blue"] {
+  --theme-primary: #2563eb;
+  --theme-primary-hover: #1d4ed8;
+  --theme-primary-light: #eff6ff;
+  --theme-primary-border: #bfdbfe;
+  --theme-primary-text: #1e40af;
+  --theme-bg: #EFF6FF;
+  --theme-shadow: rgba(37, 99, 235, 0.25);
+}
+
+[data-theme="shadcn-green"] {
+  --theme-primary: #16a34a;
+  --theme-primary-hover: #15803d;
+  --theme-primary-light: #f0fdf4;
+  --theme-primary-border: #bbf7d0;
+  --theme-primary-text: #166534;
+  --theme-bg: #F0FDF4;
+  --theme-shadow: rgba(22, 163, 74, 0.25);
+}
+
+[data-theme="shadcn-yellow"] {
+  --theme-primary: #ca8a04;
+  --theme-primary-hover: #a16207;
+  --theme-primary-light: #fefce8;
+  --theme-primary-border: #fef08a;
+  --theme-primary-text: #854d0e;
+  --theme-bg: #FEFCE8;
+  --theme-shadow: rgba(202, 138, 4, 0.25);
+}
+
+[data-theme="shadcn-red"] {
+  --theme-primary: #dc2626;
+  --theme-primary-hover: #b91c1c;
+  --theme-primary-light: #fef2f2;
+  --theme-primary-border: #fecaca;
+  --theme-primary-text: #991b1b;
+  --theme-bg: #FEF2F2;
+  --theme-shadow: rgba(220, 38, 38, 0.25);
+}
+
+[data-theme="shadcn-rose"] {
+  --theme-primary: #e11d48;
+  --theme-primary-hover: #be123c;
+  --theme-primary-light: #fff1f2;
+  --theme-primary-border: #fecdd3;
+  --theme-primary-text: #9f1239;
+  --theme-bg: #FFF1F2;
+  --theme-shadow: rgba(225, 29, 72, 0.25);
+}
+
+[data-theme="shadcn-violet"] {
+  --theme-primary: #7c3aed;
+  --theme-primary-hover: #6d28d9;
+  --theme-primary-light: #f5f3ff;
+  --theme-primary-border: #ddd6fe;
+  --theme-primary-text: #5b21b6;
+  --theme-bg: #F5F3FF;
+  --theme-shadow: rgba(124, 58, 237, 0.25);
+}
+
+[data-theme="shadcn-zinc"] {
+  --theme-primary: #27272a;
+  --theme-primary-hover: #18181b;
+  --theme-primary-light: #f4f4f5;
+  --theme-primary-border: #e4e4e7;
+  --theme-primary-text: #09090b;
+  --theme-bg: #F4F4F5;
+  --theme-shadow: rgba(39, 39, 42, 0.25);
+}
+
+[data-theme="shadcn-slate"] {
+  --theme-primary: #334155;
+  --theme-primary-hover: #1e293b;
+  --theme-primary-light: #f1f5f9;
+  --theme-primary-border: #cbd5e1;
+  --theme-primary-text: #0f172a;
+  --theme-bg: #F1F5F9;
+  --theme-shadow: rgba(51, 65, 85, 0.25);
+}
+
+[data-theme="shadcn-stone"] {
+  --theme-primary: #44403c;
+  --theme-primary-hover: #292524;
+  --theme-primary-light: #f5f5f4;
+  --theme-primary-border: #d6d3d1;
+  --theme-primary-text: #1c1917;
+  --theme-bg: #F5F5F4;
+  --theme-shadow: rgba(68, 64, 60, 0.25);
+}
+
+[data-theme="shadcn-gray"] {
+  --theme-primary: #374151;
+  --theme-primary-hover: #1f2937;
+  --theme-primary-light: #f3f4f6;
+  --theme-primary-border: #d1d5db;
+  --theme-primary-text: #111827;
+  --theme-bg: #F3F4F6;
+  --theme-shadow: rgba(55, 65, 81, 0.25);
+}
+
+[data-theme="shadcn-neutral"] {
+  --theme-primary: #262626;
+  --theme-primary-hover: #171717;
+  --theme-primary-light: #f5f5f5;
+  --theme-primary-border: #d4d4d4;
+  --theme-primary-text: #0a0a0a;
+  --theme-bg: #F5F5F5;
+  --theme-shadow: rgba(38, 38, 38, 0.25);
+}
+
+body {
+  margin: 0;
+  background-color: var(--theme-bg);
+  color: #1E293B;
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
+}
+
+/* 通用动态主题色类 */
+.btn-theme-primary {
+  background-color: var(--theme-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px -2px var(--theme-shadow);
+  transition: all 0.2s ease;
+}
+.btn-theme-primary:hover {
+  background-color: var(--theme-primary-hover) !important;
+}
+
+.bg-theme-primary {
+  background-color: var(--theme-primary) !important;
+  color: #ffffff !important;
+}
+.bg-theme-light {
+  background-color: var(--theme-primary-light) !important;
+  color: var(--theme-primary-text) !important;
+}
+.text-theme-primary {
+  color: var(--theme-primary) !important;
+}
+.text-theme-dark {
+  color: var(--theme-primary-text) !important;
+}
+.border-theme-primary {
+  border-color: var(--theme-primary) !important;
+}
+.border-theme-border {
+  border-color: var(--theme-primary-border) !important;
+}
+
+/* 温润大圆角与柔和微交互过渡 */
+.squircle-card {
+  border-radius: 24px;
+  background-color: #FFFFFF;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.squircle-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -4px var(--theme-shadow), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* 优雅滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.6);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}

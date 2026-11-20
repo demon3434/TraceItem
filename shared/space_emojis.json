@@ -1,0 +1,38 @@
+{
+  "houses": [
+    { "icon": "🏠", "label": "温馨小家" },
+    { "icon": "🏡", "label": "独栋庭院" },
+    { "icon": "🏢", "label": "公寓大楼" },
+    { "icon": "🏬", "label": "工作室" },
+    { "icon": "🏰", "label": "豪华庄园" },
+    { "icon": "🛖", "label": "乡下老家" },
+    { "icon": "🏕️", "label": "露营基地" },
+    { "icon": "🌇", "label": "城市阳光房" },
+    { "icon": "🏖️", "label": "海滨度假屋" },
+    { "icon": "🏭", "label": "储物工坊" }
+  ],
+  "rooms": [
+    { "icon": "🛋️", "label": "客厅" },
+    { "icon": "🛏️", "label": "卧室" },
+    { "icon": "🍳", "label": "厨房" },
+    { "icon": "🚽", "label": "厕所 / 卫生间" },
+    { "icon": "🪟", "label": "阳台" },
+    { "icon": "🚿", "label": "浴室 / 卫浴" },
+    { "icon": "🍽️", "label": "餐厅" },
+    { "icon": "🧸", "label": "儿童房 / 玩具角" },
+    { "icon": "📚", "label": "书房" },
+    { "icon": "👗", "label": "衣帽间" },
+    { "icon": "🚪", "label": "玄关" },
+    { "icon": "📦", "label": "储藏室 / 杂物间" },
+    { "icon": "🧺", "label": "洗衣房" },
+    { "icon": "🪴", "label": "阳台花园" },
+    { "icon": "🎮", "label": "电竞 / 娱乐室" },
+    { "icon": "🚗", "label": "车库" },
+    { "icon": "🧰", "label": "工具间" },
+    { "icon": "☕", "label": "茶室 / 水吧" },
+    { "icon": "💼", "label": "办公区" },
+    { "icon": "🚀", "label": "秘密基地" },
+    { "icon": "🎨", "label": "画室 / 手工角" }
+  ]
+}
+

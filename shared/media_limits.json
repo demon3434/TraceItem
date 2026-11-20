@@ -1,0 +1,51 @@
+{
+  "defaultBaseUrl": "http://192.168.7.186:8085",
+  "apiPrefix": "/api",
+  "squircleRadius": 22.0,
+  "squircleRadiusSm": 14.0,
+  "imageMaxLongEdge": 1600,
+  "imageJpegQuality": 82,
+  "thumbMaxLongEdge": 300,
+  "thumbJpegQuality": 75,
+  "audioMaxDurationSeconds": 120,
+  "videoMaxDurationSeconds": 60,
+  "maxImageAttachments": 9,
+  "maxVideoAttachments": 3,
+  "maxAudioAttachments": 3,
+  "mediaCacheDefaultMaxMb": 200,
+  "defaultVideoProfile": "720p",
+  "videoProfiles": {
+    "360p": {
+      "label": "极速省流",
+      "width": 640,
+      "height": 360,
+      "targetBitrateKbps": 450,
+      "fps": 24,
+      "description": "极速省流 (适合公网弱网)"
+    },
+    "480p": {
+      "label": "流畅标清",
+      "width": 854,
+      "height": 480,
+      "targetBitrateKbps": 800,
+      "fps": 25,
+      "description": "流畅省流 (兼顾细节与加载速度)"
+    },
+    "720p": {
+      "label": "高清标准",
+      "width": 1280,
+      "height": 720,
+      "targetBitrateKbps": 1400,
+      "fps": 30,
+      "description": "高清推荐 (系统默认)"
+    },
+    "1080p": {
+      "label": "超清细腻",
+      "width": 1920,
+      "height": 1080,
+      "targetBitrateKbps": 2800,
+      "fps": 30,
+      "description": "超清细腻 (精密物件与文字特写)"
+    }
+  }
+}

@@ -1,0 +1,85 @@
+# ==========================================
+# 按图索骥 (TraceItem) Git Ignore 规则
+# 说明：屏蔽个人服务器 IP/账号凭据、本地运行数据与构建产物；
+#       完整保留 AI 辅助开发配置 (.agents / .antigravity / .claude / openspec / AGENTS.md 等)，
+#       以便换机拉取仓库后无缝继续 AI 开发。
+# ==========================================
+
+# --- 1. 敏感信息：个人服务器 IP、SSH/镜像账号密码与环境密钥 ---
+docs/server_info.md
+scripts/deploy_to_186.py
+scripts/deploy_*.py
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.jks
+*.keystore
+key.properties
+
+# --- 2. 本地运行数据、SQLite 数据库、媒体文件与临时压缩包 ---
+data/
+server/data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+deploy_package.tar.gz
+test.zip
+
+# --- 3. Python / FastAPI 服务端 ---
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+**/.pytest_cache/
+venv/
+.venv/
+env/
+
+# --- 4. Web 前端 (Vue 3 + Vite) ---
+**/node_modules/
+web/dist/
+**/dist/
+.vite/
+
+# --- 5. 移动端与多平台编译过程文件 (Flutter / Dart / Android / iOS / Desktop) ---
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/build/
+**/coverage/
+**/.gradle/
+**/.kotlin/
+**/.cxx/
+**/Pods/
+**/.symlinks/
+**/Flutter/ephemeral/
+**/flutter/ephemeral/
+mobile/ios/Flutter/.last_build_id
+**/*.iml
+**/.idea/
+local.properties
+hs_err_pid*.log
+replay_pid*.log
+mobile/android/app/debug/
+mobile/android/app/profile/
+mobile/android/app/release/
+*.apk
+*.aab
+*.ipa
+*.symbols
+*.map.json
+*.class
+*.dex
+
+# --- 6. 系统与编辑器临时文件 ---
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*~
+

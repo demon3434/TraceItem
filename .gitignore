@@ -83,7 +83,8 @@ Thumbs.db
 *.swp
 *~
 
-# --- 7. 历史归档 / 遗留参考目录 ---
+# --- 7. 历史归档 / 遗留参考与本地第三方技能目录 ---
 _legacy/
+.antigravity/skills/
 
 

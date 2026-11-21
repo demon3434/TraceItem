@@ -49,7 +49,7 @@ services:
     container_name: traceitem-app
     restart: unless-stopped
     ports:
-      - "8085:8000"
+      - "${HOST_PORT:-8085}:8000"
     volumes:
       - ./data:/app/data
       - /etc/localtime:/etc/localtime:ro
@@ -58,11 +58,29 @@ services:
       - HOST=0.0.0.0
       - PORT=8000
       - DEBUG=False
-      - SECRET_KEY=traceitem-secure-secret-key-change-in-production-2026
+      - SECRET_KEY=${SECRET_KEY:-traceitem-secure-secret-key-change-in-production-2026}
       - TZ=Asia/Shanghai
+      - SERVICE_ADVERTISE_HOST=${SERVICE_ADVERTISE_HOST:-}
+      - SERVICE_ADVERTISE_PORT=${SERVICE_ADVERTISE_PORT:-8085}
+      - DEFAULT_ADMIN_USERNAME=${DEFAULT_ADMIN_USERNAME:-admin}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD:-admin123}
+      - ALLOW_PUBLIC_REGISTRATION=${ALLOW_PUBLIC_REGISTRATION:-true}
+      - BACKUP_MAX_RETENTION_COUNT=${BACKUP_MAX_RETENTION_COUNT:-3}
+    networks:
+      - traceitem_mdns
+
+networks:
+  traceitem_mdns:
+    name: traceitem_mdns
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-traceitem
 ```
 
-> 💡 **提示**：仓库中已内置 [docker-compose.aliyun.yml](docker-compose.aliyun.yml)，如果你已下载源码，也可以直接执行 `docker compose -f docker-compose.aliyun.yml up -d`。
+> 💡 **参数与 `.env` 说明**：
+> - 上方的配置天然支持 Docker Compose 的 `${变量名:-默认值}` 语法。
+> - **小白用户**：无需创建 `.env`，Docker Compose 会自动应用冒号后面的默认参数（端口 `8085`、默认管理员 `admin` / `admin123`），开箱即用。
+> - **需要自定义参数**：可以在同级目录下新建一个 `.env` 文件（参考 [.env.example](.env.example)），Docker Compose 会自动优先读取 `.env` 中的参数覆盖默认值。
 
 #### 第 2 步：一键启动
 在刚才放有 `docker-compose.yml` 的目录下打开终端，执行：

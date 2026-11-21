@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class AttachmentCreate(BaseModel):
     media_type: str  # 'image' | 'audio' | 'video'
+    scene: str = "storage"  # 'storage' | 'in_use'
     file_path: str
     thumbnail_path: Optional[str] = None
     file_size: int = 0
@@ -18,6 +19,7 @@ class AttachmentOut(BaseModel):
     id: int
     item_id: int
     media_type: str
+    scene: str = "storage"
     file_path: str
     url: str = ""  # 映射为完整访问 URL
     thumbnail_path: Optional[str] = None

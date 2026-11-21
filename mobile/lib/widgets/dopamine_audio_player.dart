@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../core/api_service.dart';
@@ -30,7 +31,6 @@ class _DopamineAudioPlayerState extends State<DopamineAudioPlayer> {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   bool _isSeeking = false;
-  bool _isCached = false;
 
   @override
   void initState() {
@@ -62,15 +62,6 @@ class _DopamineAudioPlayerState extends State<DopamineAudioPlayer> {
         });
       }
     });
-
-    _checkCacheStatus();
-  }
-
-  Future<void> _checkCacheStatus() async {
-    final cached = await MediaCacheManager.instance.get(widget.audioUrl);
-    if (cached != null && mounted) {
-      setState(() => _isCached = true);
-    }
   }
 
   @override
@@ -83,9 +74,13 @@ class _DopamineAudioPlayerState extends State<DopamineAudioPlayer> {
     if (_playerState == PlayerState.playing) {
       await _player.pause();
     } else {
+      // 优先检查是否为本地录音/缓存文件，避免本地绝对路径被 resolveMediaUrl 误拼为 http URL
+      if (await File(widget.audioUrl).exists()) {
+        await _player.play(DeviceFileSource(widget.audioUrl));
+        return;
+      }
       final cached = await MediaCacheManager.instance.get(widget.audioUrl);
       if (cached != null) {
-        if (!_isCached && mounted) setState(() => _isCached = true);
         await _player.play(DeviceFileSource(cached.path));
       } else {
         final resolved = ApiService.instance.resolveMediaUrl(widget.audioUrl);
@@ -93,17 +88,11 @@ class _DopamineAudioPlayerState extends State<DopamineAudioPlayer> {
           final authUrl =
               ApiService.instance.resolveAuthenticatedMediaUrl(widget.audioUrl);
           await _player.play(UrlSource(authUrl));
-          MediaCacheManager.instance
-              .downloadAndCache(
+          MediaCacheManager.instance.downloadAndCache(
             widget.audioUrl,
             resolved,
             headers: ApiService.instance.authHeaders,
-          )
-              .then((file) {
-            if (file != null && mounted) {
-              setState(() => _isCached = true);
-            }
-          });
+          );
         } else {
           await _player.play(DeviceFileSource(widget.audioUrl));
         }
@@ -186,7 +175,7 @@ class _DopamineAudioPlayerState extends State<DopamineAudioPlayer> {
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
-                              _isCached ? '$sizeStr · 本地秒开' : sizeStr,
+                              sizeStr,
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,

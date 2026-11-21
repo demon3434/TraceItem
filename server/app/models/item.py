@@ -87,6 +87,15 @@ class Item(Base):
     quantity: Mapped[int] = mapped_column(Integer, default=1)
     location_detail: Mapped[str] = mapped_column(Text, default="")  # 可选具体位置描述 (抽屉/层架)
     description: Mapped[str] = mapped_column(Text, default="")      # 备忘说明
+    status: Mapped[str] = mapped_column(String(20), default="stored", nullable=False, index=True)
+    storage_house_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("houses.id", ondelete="SET NULL"), nullable=True
+    )
+    storage_room_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("rooms.id", ondelete="SET NULL"), nullable=True
+    )
+    storage_location_detail: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    status_updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     client_uuid: Mapped[str | None] = mapped_column(String(64), nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     field_versions_json: Mapped[str] = mapped_column(Text, default="{}", nullable=False)
@@ -103,8 +112,10 @@ class Item(Base):
 
     # 关联
     owner = relationship("User", back_populates="items")
-    house = relationship("House", back_populates="items")
-    room = relationship("Room", back_populates="items")
+    house = relationship("House", foreign_keys=[house_id], back_populates="items")
+    room = relationship("Room", foreign_keys=[room_id], back_populates="items")
+    storage_house = relationship("House", foreign_keys=[storage_house_id])
+    storage_room = relationship("Room", foreign_keys=[storage_room_id])
     category = relationship("Category", back_populates="items")
     tags = relationship("Tag", secondary=item_tags, back_populates="items")
     attachments = relationship(
@@ -118,6 +129,14 @@ class Item(Base):
     def path_display(self) -> str:
         house_name = self.house.name if self.house else ""
         room_name = self.room.name if self.room else ""
+        if house_name and room_name:
+            return f"{house_name} > {room_name}"
+        return house_name or room_name or ""
+
+    @property
+    def storage_path_display(self) -> str:
+        house_name = self.storage_house.name if self.storage_house else ""
+        room_name = self.storage_room.name if self.storage_room else ""
         if house_name and room_name:
             return f"{house_name} > {room_name}"
         return house_name or room_name or ""

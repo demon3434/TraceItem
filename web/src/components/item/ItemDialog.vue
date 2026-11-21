@@ -70,7 +70,7 @@
               <input
                 v-model.number="form.quantity"
                 type="number"
-                min="1"
+                min="0"
                 class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>

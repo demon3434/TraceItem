@@ -16,11 +16,39 @@
         {{ item.category?.icon || "📦" }}
       </div>
 
-      <!-- 数量徽章 -->
+      <!-- 数量徽章 (悬停卡片时平滑展开 -1 / +1 快捷步进) -->
       <div
-        class="absolute top-2.5 right-2.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-xs font-bold text-slate-800 shadow-sm"
+        class="absolute top-2.5 right-2.5 flex items-center rounded-full bg-white/90 backdrop-blur-md text-xs font-bold text-slate-800 shadow-sm transition-all"
+        @click.stop
       >
-        x{{ item.quantity }}
+        <button
+          type="button"
+          :disabled="item.quantity <= 0"
+          @click="emit('step-quantity', { item, delta: -1 })"
+          class="w-0 opacity-0 overflow-hidden group-hover:w-6 group-hover:opacity-100 h-6 flex items-center justify-center text-slate-500 hover:text-orange-600 disabled:opacity-30 transition-all"
+          title="减少 1"
+        >
+          <Minus class="w-3.5 h-3.5" />
+        </button>
+        <span class="px-2.5 py-1 select-none">x{{ item.quantity }}</span>
+        <button
+          type="button"
+          @click="emit('step-quantity', { item, delta: 1 })"
+          class="w-0 opacity-0 overflow-hidden group-hover:w-6 group-hover:opacity-100 h-6 flex items-center justify-center text-slate-500 hover:text-orange-600 transition-all"
+          title="增加 1"
+        >
+          <Plus class="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      <!-- 极简无字「已取出」图标角标（仅 Lucide 图标 + 微光点） -->
+      <div
+        v-if="item.status === 'in_use'"
+        class="absolute bottom-2.5 right-2.5 px-2 py-1 rounded-full bg-slate-900/75 backdrop-blur-sm text-white flex items-center space-x-1.5 shadow-sm"
+        title="已取出使用"
+      >
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+        <PackageOpen class="w-3.5 h-3.5" />
       </div>
 
       <!-- 多模态附件图标指示器 -->
@@ -94,6 +122,49 @@
         <Edit3 class="w-4 h-4" />
       </button>
       <button
+        @click="emit('lifecycle', item)"
+        class="p-1.5 rounded-lg transition-colors"
+        :class="
+          item.status === 'in_use'
+            ? 'text-emerald-600 hover:bg-emerald-50'
+            : 'text-amber-600 hover:bg-amber-50'
+        "
+        :title="item.status === 'in_use' ? '归还收纳' : '取出使用'"
+      >
+        <svg
+          v-if="item.status === 'in_use'"
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3.5 10v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-7.5" />
+          <path d="M2.5 10h9" />
+          <path d="M8.5 14.5h4.5" />
+          <path d="M20.5 3.5 13.5 10.5" />
+          <path d="M13.5 5.5v5h5" />
+        </svg>
+        <svg
+          v-else
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3.5 10v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-7.5" />
+          <path d="M2.5 10h9" />
+          <path d="M8.5 14.5h4.5" />
+          <path d="M13.5 10.5 20.5 3.5" />
+          <path d="M15.5 3.5h5v5" />
+        </svg>
+      </button>
+      <button
         @click="emit('delete', item)"
         class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
         title="删除物品"
@@ -107,14 +178,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Item } from "@/types";
-import { MapPin, Edit3, Trash2, Mic, Video } from "lucide-vue-next";
+import { MapPin, Edit3, Trash2, Mic, Video, PackageOpen, Minus, Plus } from "lucide-vue-next";
 import { resolveAttachmentThumb } from "@/utils/mediaUrl";
 
 const props = defineProps<{
   item: Item;
 }>();
 
-const emit = defineEmits(["preview", "edit", "delete"]);
+const emit = defineEmits(["preview", "edit", "delete", "lifecycle", "step-quantity"]);
 
 const primaryThumbnail = computed(() => {
   if (!props.item.attachments || props.item.attachments.length === 0) return null;

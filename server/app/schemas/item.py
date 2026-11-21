@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, Field
+from typing import Literal, Optional
+from pydantic import BaseModel, Field, model_validator
 from app.schemas.attachment import AttachmentCreate, AttachmentOut
 from app.schemas.space import HouseOut, RoomOut
 
@@ -48,7 +48,7 @@ class ItemCreate(BaseModel):
     category_id: Optional[int] = None
     name: str = Field(..., min_length=1, max_length=120)
     brand: Optional[str] = Field("", max_length=120)
-    quantity: int = Field(1, ge=1)
+    quantity: int = Field(1, ge=0)
     location_detail: Optional[str] = Field("", description="可选柜子/抽屉细节备注")
     description: Optional[str] = Field("", description="备忘说明")
     tag_names: Optional[list[str]] = Field(default_factory=list)
@@ -62,7 +62,7 @@ class ItemUpdate(BaseModel):
     category_id: Optional[int] = None
     name: Optional[str] = Field(None, min_length=1, max_length=120)
     brand: Optional[str] = None
-    quantity: Optional[int] = Field(None, ge=1)
+    quantity: Optional[int] = Field(None, ge=0)
     location_detail: Optional[str] = None
     description: Optional[str] = None
     tag_names: Optional[list[str]] = None
@@ -86,6 +86,11 @@ class ItemOut(BaseModel):
     quantity: int
     location_detail: str
     description: str
+    status: Literal["stored", "in_use"] = "stored"
+    storage_house_id: Optional[int] = None
+    storage_room_id: Optional[int] = None
+    storage_location_detail: str = ""
+    status_updated_at: Optional[datetime] = None
     client_uuid: Optional[str] = None
     version: int = 1
     created_at: datetime
@@ -97,12 +102,47 @@ class ItemOut(BaseModel):
     category: Optional[CategoryOut] = None
     tags: list[TagOut] = []
     attachments: list[AttachmentOut] = []
+    storage_attachments: list[AttachmentOut] = []
 
     # 空间路径辅助展示
     path_display: Optional[str] = None  # 如 "阳光城 > 客厅"
+    storage_path_display: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _partition_attachments_by_status(self) -> "ItemOut":
+        if self.storage_attachments:
+            return self
+        all_atts = list(self.attachments)
+        storage_atts = [a for a in all_atts if (a.scene or "storage") == "storage"]
+        self.storage_attachments = storage_atts
+        if self.status == "in_use":
+            self.attachments = [a for a in all_atts if a.scene == "in_use"]
+        else:
+            self.attachments = storage_atts
+        return self
 
     class Config:
         from_attributes = True
+
+
+class ItemTakeOutPayload(BaseModel):
+    house_id: int
+    room_id: int
+    location_detail: str = ""
+    attachments: list[AttachmentCreate] = Field(..., min_length=1)
+    expected_version: Optional[int] = Field(None, ge=1)
+    client_op_uuid: Optional[str] = Field(None, max_length=64)
+
+
+class ItemPutBackPayload(BaseModel):
+    restore_original: bool = True
+    house_id: Optional[int] = None
+    room_id: Optional[int] = None
+    location_detail: Optional[str] = None
+    added_storage_attachments: Optional[list[AttachmentCreate]] = None
+    removed_attachment_paths: Optional[list[str]] = None
+    expected_version: Optional[int] = Field(None, ge=1)
+    client_op_uuid: Optional[str] = Field(None, max_length=64)
 
 
 class GodViewItemOut(ItemOut):

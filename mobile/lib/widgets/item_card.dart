@@ -78,7 +78,7 @@ class _MobileItemCardState extends State<MobileItemCard> {
                               fit: BoxFit.contain,
                               width: double.infinity,
                               height: double.infinity,
-                              memCacheWidth: 400,
+                              memCacheWidth: 600,
                               placeholder: (_, __) => Center(
                                 child: Text(
                                   widget.item.category?.icon ?? '📦',
@@ -167,6 +167,43 @@ class _MobileItemCardState extends State<MobileItemCard> {
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    // 极简无字「已取出」图标角标（仅 Lucide 图标 + 微光点，零汉字）
+                    if (widget.item.isInUse)
+                      Positioned(
+                        bottom: 6,
+                        left: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A).withValues(alpha: 0.72),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 6,
+                                height: 6,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFF59E0B),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Icon(
+                                LucideIcons.packageOpen,
+                                size: 13,
+                                color: Colors.white,
+                              ),
+                            ],
                           ),
                         ),
                       ),

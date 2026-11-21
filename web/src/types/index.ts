@@ -76,6 +76,7 @@ export interface Attachment {
   id: number;
   item_id: number;
   media_type: "image" | "audio" | "video";
+  scene?: "storage" | "in_use";
   file_path: string;
   url: string;
   thumbnail_path?: string;
@@ -99,6 +100,11 @@ export interface Item {
   quantity: number;
   location_detail: string;
   description: string;
+  status?: "stored" | "in_use";
+  storage_house_id?: number | null;
+  storage_room_id?: number | null;
+  storage_location_detail?: string;
+  status_updated_at?: string | null;
   version?: number;
   created_at: string;
   updated_at: string;
@@ -107,7 +113,9 @@ export interface Item {
   category?: Category;
   tags: Tag[];
   attachments: Attachment[];
+  storage_attachments?: Attachment[];
   path_display?: string;
+  storage_path_display?: string;
 }
 
 export interface GodViewItem extends Item {
@@ -157,6 +165,7 @@ export interface AdminSystemStats {
 
 export interface AuthConfig {
   allow_public_registration: boolean;
+  server_instance_id?: string;
 }
 
 export interface AdminUserCreatePayload {

@@ -14,9 +14,12 @@ from app.schemas.item import (
     CategoryUpdate,
     ItemCreate,
     ItemOut,
+    ItemPutBackPayload,
+    ItemTakeOutPayload,
     ItemUpdate,
     TagOut,
 )
+from app.services.item_lifecycle_service import put_back_item, take_out_item
 from app.services.category_service import (
     create_user_category,
     delete_user_category,
@@ -43,6 +46,7 @@ def list_items(
     house_id: Optional[int] = Query(None, description="按房屋筛选"),
     room_id: Optional[int] = Query(None, description="按房间筛选"),
     category_id: Optional[int] = Query(None, description="按分类筛选"),
+    item_status: Optional[str] = Query(None, alias="status", description="按状态筛选: stored | in_use"),
     page: int = Query(1, ge=1, description="当前页码"),
     page_size: int = Query(30, ge=1, le=500, description="每页数量"),
     current_user: User = Depends(get_current_user),
@@ -56,6 +60,7 @@ def list_items(
         house_id=house_id,
         room_id=room_id,
         category_id=category_id,
+        item_status=item_status,
         skip=skip,
         limit=page_size,
     )
@@ -238,6 +243,32 @@ def update_item(
     item = update_user_item(db, current_user.id, item_id, payload)
     sync_item_fts(db, item.id)
     return ApiResponse(data=ItemOut.model_validate(item), message="物品信息修改成功")
+
+
+@router.post("/{item_id}/take-out", response_model=ApiResponse[ItemOut])
+def take_out_item_endpoint(
+    item_id: int,
+    payload: ItemTakeOutPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """将已收纳物品取出使用，记录当前位置与使用中实拍附件"""
+    item = take_out_item(db, current_user.id, item_id, payload)
+    sync_item_fts(db, item.id)
+    return ApiResponse(data=ItemOut.model_validate(item), message="物品已标记为取出使用")
+
+
+@router.post("/{item_id}/put-back", response_model=ApiResponse[ItemOut])
+def put_back_item_endpoint(
+    item_id: int,
+    payload: ItemPutBackPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """将使用中物品归还收纳，清理使用中附件并恢复或更新收纳位置"""
+    item = put_back_item(db, current_user.id, item_id, payload)
+    sync_item_fts(db, item.id)
+    return ApiResponse(data=ItemOut.model_validate(item), message="物品已归还收纳")
 
 
 @router.delete("/{item_id}", response_model=ApiResponse[None])

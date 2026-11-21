@@ -250,10 +250,10 @@ class ItemEditQuantityStepper extends StatelessWidget {
 
   const ItemEditQuantityStepper({super.key, required this.controller});
 
-  int get _currentValue => (int.tryParse(controller.text) ?? 1).clamp(1, 9999);
+  int get _currentValue => (int.tryParse(controller.text) ?? 1).clamp(0, 9999);
 
   void _step(int delta) {
-    final next = (_currentValue + delta).clamp(1, 9999);
+    final next = (_currentValue + delta).clamp(0, 9999);
     controller.text = next.toString();
     controller.selection = TextSelection.collapsed(offset: controller.text.length);
     HapticFeedback.selectionClick();
@@ -267,12 +267,12 @@ class ItemEditQuantityStepper extends StatelessWidget {
       valueListenable: controller,
       builder: (context, value, _) {
         final parsed = int.tryParse(value.text);
-        final canDecrement = parsed != null && parsed > 1;
+        final canDecrement = parsed != null && parsed > 0;
 
         return Focus(
           onFocusChange: (hasFocus) {
             if (!hasFocus) {
-              final safe = (int.tryParse(controller.text) ?? 1).clamp(1, 9999);
+              final safe = (int.tryParse(controller.text) ?? 0).clamp(0, 9999);
               if (controller.text != safe.toString()) {
                 controller.text = safe.toString();
               }
@@ -303,12 +303,6 @@ class ItemEditQuantityStepper extends StatelessWidget {
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(horizontal: 6),
                     ),
-                    onChanged: (raw) {
-                      if (raw == '0') {
-                        controller.text = '1';
-                        controller.selection = const TextSelection.collapsed(offset: 1);
-                      }
-                    },
                   ),
                 ),
                 Container(width: 1, height: 42, color: const Color(0xFFE2E8F0)),

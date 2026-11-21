@@ -225,7 +225,7 @@ class _ItemEditScreenState extends State<ItemEditScreen> {
         'category_id': _selectedCategory?.id,
         'name': name,
         'brand': _brandController.text.trim(),
-        'quantity': (int.tryParse(_qtyController.text) ?? 1).clamp(1, 9999),
+        'quantity': (int.tryParse(_qtyController.text) ?? 1).clamp(0, 9999),
         'location_detail': _locationController.text.trim(),
         'description': _descController.text.trim(),
         'tag_names': _tags,

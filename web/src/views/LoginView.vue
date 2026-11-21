@@ -106,7 +106,6 @@
             placeholder="请输入您的昵称（系统界面优先显示此昵称）"
             class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-slate-50"
           />
-          <p class="text-xs text-slate-400 mt-1">账号独立私有，界面显示昵称，无需赋予任何家庭角色</p>
         </div>
 
         <div>
@@ -116,6 +115,17 @@
             type="password"
             required
             placeholder="请输入至少 6 位密码"
+            class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-slate-50"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1.5">确认密码</label>
+          <input
+            v-model="regConfirmPassword"
+            type="password"
+            required
+            placeholder="请再次输入登录密码"
             class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-slate-50"
           />
         </div>
@@ -162,6 +172,7 @@ const password = ref(isDev ? (quickAccounts[0]?.p || "") : "");
 const regUsername = ref("");
 const regNickname = ref("");
 const regPassword = ref("");
+const regConfirmPassword = ref("");
 const loading = ref(false);
 
 onMounted(async () => {
@@ -199,6 +210,10 @@ async function handleLogin() {
 async function handleRegister() {
   if (!regUsername.value.trim() || !regPassword.value || !regNickname.value.trim()) {
     toastStore.warning("请完整填写注册信息", "账号、密码和昵称均为必填项");
+    return;
+  }
+  if (regPassword.value !== regConfirmPassword.value) {
+    toastStore.warning("两次输入的密码不一致", "请重新核对登录密码");
     return;
   }
   loading.value = true;

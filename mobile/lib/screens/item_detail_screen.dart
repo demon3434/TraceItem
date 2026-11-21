@@ -10,8 +10,11 @@ import '../widgets/item_detail_audio_section.dart';
 import '../widgets/item_detail_header_card.dart';
 import '../widgets/item_detail_image_grid.dart';
 import '../widgets/item_detail_video_section.dart';
+import '../widgets/lifecycle_action_icon.dart';
 import '../widgets/main_top_bar.dart';
 import 'item_edit_screen.dart';
+import 'item_put_back_screen.dart';
+import 'item_take_out_screen.dart';
 
 class ItemDetailScreen extends StatefulWidget {
   final Item item;
@@ -35,6 +38,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   late Item _item;
   bool _hasChanged = false;
   bool _deleting = false;
+  bool _updatingQty = false;
 
   @override
   void initState() {
@@ -65,6 +69,100 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
       _hasChanged = true;
       await _refreshLatestDetail();
       if (mounted) CustomDialogs.showToast(context, '物品信息已更新');
+    }
+  }
+
+  Future<void> _handleLifecycleAction() async {
+    final ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => _item.isInUse
+            ? ItemPutBackScreen(
+                item: _item,
+                houses: widget.houses,
+                rooms: widget.rooms,
+              )
+            : ItemTakeOutScreen(
+                item: _item,
+                houses: widget.houses,
+                rooms: widget.rooms,
+              ),
+      ),
+    );
+    if (ok == true) {
+      _hasChanged = true;
+      await _refreshLatestDetail();
+      if (mounted) {
+        CustomDialogs.showToast(
+          context,
+          _item.isInUse ? '物品已标记为取出使用' : '物品已归还收纳',
+        );
+      }
+    }
+  }
+
+  Future<void> _handleStepQuantity(int delta) async {
+    if (_updatingQty) return;
+    final nextQty = _item.quantity + delta;
+    if (nextQty < 0) return;
+
+    if (delta < 0 && nextQty == 0) {
+      final firstConfirm = await CustomDialogs.showConfirm(
+        context: context,
+        title: '数量已归零，是否删除？',
+        message: '“${_item.name}”数量将变为 0。如需清理台账可删除该物品，也可保留数量 0。',
+        confirmText: '删除物品',
+        cancelText: '保留 (数量 0)',
+        isDanger: true,
+      );
+      if (!mounted) return;
+      if (firstConfirm) {
+        final secondConfirm = await CustomDialogs.showConfirm(
+          context: context,
+          title: '再次确认删除？',
+          message: '删除后将永久清理“${_item.name}”及其照片附件，无法恢复！',
+          confirmText: '确认彻底删除',
+          cancelText: '取消',
+          isDanger: true,
+        );
+        if (!mounted) return;
+        if (secondConfirm) {
+          setState(() => _deleting = true);
+          try {
+            await OfflineSyncService.instance.saveOrQueueDelete(item: _item);
+            if (mounted) {
+              HapticFeedback.mediumImpact();
+              Navigator.of(context).pop(true);
+            }
+          } catch (e) {
+            if (mounted) {
+              setState(() => _deleting = false);
+              CustomDialogs.showToast(context, '删除失败', description: ApiService.formatDioError(e), isError: true);
+            }
+          }
+          return;
+        }
+      }
+    }
+
+    setState(() => _updatingQty = true);
+    try {
+      final updated = await ApiService.instance.updateItem(_item.id, {
+        'quantity': nextQty,
+        'expected_version': _item.version,
+      });
+      if (mounted) {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _item = updated;
+          _hasChanged = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        CustomDialogs.showToast(context, '更新数量失败', description: ApiService.formatDioError(e), isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _updatingQty = false);
     }
   }
 
@@ -173,12 +271,85 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
           ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            // 快捷数量步进 (-1 / +1)
+            Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: (_updatingQty || _item.quantity <= 0)
+                        ? null
+                        : () => _handleStepQuantity(-1),
+                    icon: const Icon(LucideIcons.minus, size: 16),
+                    visualDensity: VisualDensity.compact,
+                    tooltip: '减少 1',
+                  ),
+                  Text(
+                    '${_item.quantity}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _updatingQty ? null : () => _handleStepQuantity(1),
+                    icon: const Icon(LucideIcons.plus, size: 16),
+                    visualDensity: VisualDensity.compact,
+                    tooltip: '增加 1',
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            Tooltip(
+              message: '编辑物品信息',
+              child: SizedBox(
+                width: 52,
+                height: 44,
+                child: ShadButton.outline(
+                  padding: EdgeInsets.zero,
+                  onPressed: _handleEdit,
+                  child: const Icon(
+                    LucideIcons.pencil,
+                    size: 18,
+                    color: Color(0xFF475569),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Tooltip(
+              message: _item.isInUse ? '归还收纳' : '取出使用',
+              child: SizedBox(
+                width: 52,
+                height: 44,
+                child: ShadButton(
+                  padding: EdgeInsets.zero,
+                  backgroundColor: _item.isInUse
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFF59E0B),
+                  onPressed: _handleLifecycleAction,
+                  child: LifecycleActionIcon(
+                    isInUse: _item.isInUse,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             Tooltip(
               message: '删除物品',
               child: SizedBox(
-                width: 56,
+                width: 52,
                 height: 44,
                 child: ShadButton.destructive(
                   padding: EdgeInsets.zero,
@@ -198,23 +369,6 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                           size: 18,
                           color: Colors.white,
                         ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Tooltip(
-              message: '编辑物品信息',
-              child: SizedBox(
-                width: 56,
-                height: 44,
-                child: ShadButton.outline(
-                  padding: EdgeInsets.zero,
-                  onPressed: _handleEdit,
-                  child: const Icon(
-                    LucideIcons.pencil,
-                    size: 18,
-                    color: Color(0xFF475569),
-                  ),
                 ),
               ),
             ),

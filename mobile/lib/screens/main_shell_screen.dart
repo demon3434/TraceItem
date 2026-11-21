@@ -45,6 +45,7 @@ class _MainShellScreenState extends State<MainShellScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     ApiService.instance.onUnauthorized = _handleSessionExpired;
+    ApiService.instance.onServerInstanceChanged = _handleServerInstanceChanged;
     NetworkRouteManager.instance.startAutoRouting();
     _recalibrateRouteAndRefresh(
       refreshIfLongPause: false,
@@ -72,6 +73,10 @@ class _MainShellScreenState extends State<MainShellScreen>
     WidgetsBinding.instance.removeObserver(this);
     if (ApiService.instance.onUnauthorized == _handleSessionExpired) {
       ApiService.instance.onUnauthorized = null;
+    }
+    if (ApiService.instance.onServerInstanceChanged ==
+        _handleServerInstanceChanged) {
+      ApiService.instance.onServerInstanceChanged = null;
     }
     ThemeController.instance.removeListener(_onThemeChanged);
     NetworkRouteManager.instance.stopAutoRouting();
@@ -181,6 +186,16 @@ class _MainShellScreenState extends State<MainShellScreen>
       '登录状态已过期',
       description: '请重新登录家庭账本账号',
       isError: true,
+    );
+    _handleLoggedOut();
+  }
+
+  void _handleServerInstanceChanged() {
+    if (!mounted) return;
+    CustomDialogs.showToast(
+      context,
+      '检测到连接至新的家庭账本服务',
+      description: '已重置本地工作区，请重新登录',
     );
     _handleLoggedOut();
   }

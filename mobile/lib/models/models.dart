@@ -158,6 +158,7 @@ class Attachment {
   final int id;
   final int itemId;
   final String mediaType;
+  final String scene;
   final String filePath;
   final String url;
   final String? thumbnailUrl;
@@ -170,6 +171,7 @@ class Attachment {
     required this.id,
     required this.itemId,
     required this.mediaType,
+    this.scene = 'storage',
     required this.filePath,
     required this.url,
     this.thumbnailUrl,
@@ -184,6 +186,7 @@ class Attachment {
       id: json['id'] as int? ?? 0,
       itemId: json['item_id'] as int? ?? 0,
       mediaType: json['media_type'] as String? ?? 'image',
+      scene: json['scene'] as String? ?? 'storage',
       filePath: json['file_path'] as String? ?? '',
       url: json['url'] as String? ?? '',
       thumbnailUrl: json['thumbnail_url'] as String?,
@@ -198,6 +201,7 @@ class Attachment {
         'id': id,
         'item_id': itemId,
         'media_type': mediaType,
+        'scene': scene,
         'file_path': filePath,
         'url': url,
         'thumbnail_url': thumbnailUrl,
@@ -219,13 +223,21 @@ class Item {
   final int quantity;
   final String locationDetail;
   final String description;
+  final String status;
+  final int? storageHouseId;
+  final int? storageRoomId;
+  final String storageLocationDetail;
   final int version;
   final House? house;
   final Room? room;
   final Category? category;
   final List<Tag> tags;
   final List<Attachment> attachments;
+  final List<Attachment> storageAttachments;
   final String? pathDisplay;
+  final String? storagePathDisplay;
+
+  bool get isInUse => status == 'in_use';
 
   Item({
     required this.id,
@@ -238,13 +250,19 @@ class Item {
     required this.quantity,
     required this.locationDetail,
     required this.description,
+    this.status = 'stored',
+    this.storageHouseId,
+    this.storageRoomId,
+    this.storageLocationDetail = '',
     this.version = 1,
     this.house,
     this.room,
     this.category,
     this.tags = const [],
     this.attachments = const [],
+    this.storageAttachments = const [],
     this.pathDisplay,
+    this.storagePathDisplay,
   });
 
   factory Item.fromJson(Map<String, dynamic> json) {
@@ -259,13 +277,19 @@ class Item {
       quantity: json['quantity'] as int? ?? 1,
       locationDetail: json['location_detail'] as String? ?? '',
       description: json['description'] as String? ?? '',
+      status: json['status'] as String? ?? 'stored',
+      storageHouseId: json['storage_house_id'] as int?,
+      storageRoomId: json['storage_room_id'] as int?,
+      storageLocationDetail: json['storage_location_detail'] as String? ?? '',
       version: json['version'] as int? ?? 1,
       house: json['house'] != null ? House.fromJson(json['house']) : null,
       room: json['room'] != null ? Room.fromJson(json['room']) : null,
       category: json['category'] != null ? Category.fromJson(json['category']) : null,
       tags: (json['tags'] as List<dynamic>?)?.map((e) => Tag.fromJson(e)).toList() ?? [],
       attachments: (json['attachments'] as List<dynamic>?)?.map((e) => Attachment.fromJson(e)).toList() ?? [],
+      storageAttachments: (json['storage_attachments'] as List<dynamic>?)?.map((e) => Attachment.fromJson(e)).toList() ?? [],
       pathDisplay: json['path_display'] as String?,
+      storagePathDisplay: json['storage_path_display'] as String?,
     );
   }
 
@@ -280,13 +304,19 @@ class Item {
         'quantity': quantity,
         'location_detail': locationDetail,
         'description': description,
+        'status': status,
+        'storage_house_id': storageHouseId,
+        'storage_room_id': storageRoomId,
+        'storage_location_detail': storageLocationDetail,
         'version': version,
         if (house != null) 'house': house!.toJson(),
         if (room != null) 'room': room!.toJson(),
         if (category != null) 'category': category!.toJson(),
         'tags': tags.map((t) => t.toJson()).toList(),
         'attachments': attachments.map((a) => a.toJson()).toList(),
+        'storage_attachments': storageAttachments.map((a) => a.toJson()).toList(),
         'path_display': pathDisplay,
+        'storage_path_display': storagePathDisplay,
       };
 }
 

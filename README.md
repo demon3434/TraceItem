@@ -31,16 +31,44 @@
 
 ---
 
-## 🚀 极速部署指南（推荐）
+## 🚀 部署指南（Docker Compose）
 
-本系统提供打包好的多架构 Docker 容器镜像，**无需安装 Python、无需配置 Node.js，只要机器上有 Docker 就能运行**！
+> **配置规范**：无论采用哪种方式部署，**系统均统一通过同级目录下的 `.env` 环境变量文件进行参数配置与管理**。  
+> 两种部署方式的区别仅在于：**是直接拉取预构建的阿里云镜像运行，还是在本地从源码构建镜像运行**。
 
-### 方式一：直接拉取预构建镜像（小白用户 / 家用 NAS / 玩客云 / 软路由推荐）
+---
 
-免去下载庞大源码与本地编译的漫长等待，两步即可拉起：
+### 第一步：准备环境变量配置（所有部署方式通用）
 
-#### 第 1 步：准备部署文件
-在服务器或电脑任意位置新建一个文件夹（例如 `traceitem`），并在该目录下新建 `docker-compose.yml` 文件，填入如下内容：
+在部署工作目录下准备环境配置文件 `.env`。项目提供了完整的模板文件 [.env.example](.env.example)，请复制一份为 `.env` 并按需调整参数：
+
+```bash
+cp .env.example .env
+```
+
+核心配置项说明：
+
+| 变量名 | 默认值 | 说明 |
+| :--- | :--- | :--- |
+| `HOST_PORT` | `8085` | 宿主机对外访问端口，对应访问地址 `http://<服务器IP>:8085/` |
+| `SERVICE_ADVERTISE_HOST` | 留空（自动探测） | 多网卡宿主机建议显式填写局域网 IP（如 `192.168.1.100`），供移动端 mDNS 自动发现 |
+| `SERVICE_ADVERTISE_PORT` | `8085` | 服务对外广播端口，通常与 `HOST_PORT` 保持一致 |
+| `DEFAULT_ADMIN_USERNAME` | `admin` | 首次初始化默认系统管理员用户名 |
+| `DEFAULT_ADMIN_PASSWORD` | `admin123` | 首次初始化默认系统管理员密码（首次登录后建议在网页端修改） |
+| `SECRET_KEY` | 内置密钥 | JWT 登录令牌签名密钥，公网或生产环境请修改为随机长字符串 |
+| `ALLOW_PUBLIC_REGISTRATION` | `true` | 是否开放家庭成员公开注册通道（`true` 允许 / `false` 仅管理员可建号） |
+| `BACKUP_MAX_RETENTION_COUNT` | `3` | 历史纯 TAR 备份最大保留份数 |
+
+---
+
+### 第二步：选择部署方式
+
+#### 方式 A：使用阿里云预构建镜像部署（免本地编译，推荐家用 NAS / 玩客云 / 软路由）
+
+无需在本地编译前端与后端代码，直接拉取多架构镜像秒级启动：
+
+1. **获取或创建 Compose 编排文件**：
+   可以直接使用仓库内置的 [docker-compose.aliyun.yml](docker-compose.aliyun.yml)；或者在放有 `.env` 的目录下新建 `docker-compose.yml`，内容如下：
 
 ```yaml
 services:
@@ -77,33 +105,30 @@ networks:
       com.docker.network.bridge.name: br-traceitem
 ```
 
-> 💡 **参数与 `.env` 说明**：
-> - 上方的配置天然支持 Docker Compose 的 `${变量名:-默认值}` 语法。
-> - **小白用户**：无需创建 `.env`，Docker Compose 会自动应用冒号后面的默认参数（端口 `8085`、默认管理员 `admin` / `admin123`），开箱即用。
-> - **需要自定义参数**：可以在同级目录下新建一个 `.env` 文件（参考 [.env.example](.env.example)），Docker Compose 会自动优先读取 `.env` 中的参数覆盖默认值。
-
-#### 第 2 步：一键启动
-在刚才放有 `docker-compose.yml` 的目录下打开终端，执行：
-
+2. **启动服务**：
 ```bash
+# 如果使用内置的 docker-compose.aliyun.yml：
+docker compose -f docker-compose.aliyun.yml up -d
+
+# 如果保存为 docker-compose.yml：
 docker compose up -d
 ```
 
 ---
 
-### 方式二：从源码本地构建部署（适合二次开发与代码贡献者）
+#### 方式 B：从源码本地构建部署（适合二次开发与定制）
 
-如果你想对代码进行修改并自行编译镜像：
+克隆完整代码仓库，在本地使用多阶段构建编译前后端镜像并启动：
 
 ```bash
 # 1. 克隆本仓库代码
 git clone https://github.com/demon3434/TraceItem.git
 cd TraceItem
 
-# 2. 复制环境配置（可选修改）
+# 2. 复制并按需调整环境配置
 cp .env.example .env
 
-# 3. 本地编译并启动
+# 3. 本地编译镜像并启动容器
 docker compose up -d --build
 ```
 

@@ -4,6 +4,7 @@ import 'api_service.dart';
 import 'media_cache_manager.dart';
 import 'meta_snapshot_store.dart';
 import 'offline_db.dart';
+import 'offline_sync_service.dart';
 
 /// 跨服务器/重部署环境实例指纹卫士
 /// 当探测到服务端 server_instance_id 发生变动（换服务器IP或全新建库重部署），
@@ -13,6 +14,7 @@ class ServerIdentityGuard {
   ServerIdentityGuard._internal();
 
   static const String _kKey = 'traceitem_last_server_instance_id';
+  Future<bool>? _inflight;
 
   Future<String?> getLastServerInstanceId() async {
     final prefs = await SharedPreferences.getInstance();
@@ -21,33 +23,71 @@ class ServerIdentityGuard {
 
   /// 检查新实例指纹，若检测到服务器迁移或重新建库，执行全自动缓存自愈与重置序列
   /// 返回 true 表示检测到变动并已执行重置序列
-  Future<bool> checkAndHandleInstanceChange(String? newInstanceId) async {
+  Future<bool> checkAndHandleInstanceChange(String? newInstanceId) {
     if (newInstanceId == null || newInstanceId.trim().isEmpty) {
-      return false;
+      return Future.value(false);
     }
-    final cleanId = newInstanceId.trim();
+    if (_inflight != null) return _inflight!;
+    final future = _doCheckAndHandle(newInstanceId.trim());
+    _inflight = future;
+    return future.whenComplete(() {
+      if (identical(_inflight, future)) {
+        _inflight = null;
+      }
+    });
+  }
+
+  Future<bool> _doCheckAndHandle(String cleanId) async {
     final prefs = await SharedPreferences.getInstance();
     final lastId = prefs.getString(_kKey);
+    final isLegacySessionWithoutFingerprint =
+        (lastId == null || lastId.isEmpty) &&
+            ApiService.instance.isAuthenticated;
 
-    if (lastId != null && lastId.isNotEmpty && lastId != cleanId) {
+    if ((lastId != null && lastId.isNotEmpty && lastId != cleanId) ||
+        isLegacySessionWithoutFingerprint) {
       debugPrint(
         '[ServerIdentityGuard] ⚠️ 检测到服务端指纹变动 ($lastId -> $cleanId)，启动自动自愈重置序列...',
       );
 
-      // 1. 抹除本地离线数据库 (包括待同步 outbox 与历史物品缓存)
-      await OfflineDb.instance.clearAllCache();
+      // 1. 抹除本地离线数据库 (包括待同步 outbox 与历史物品缓存) 并刷新内存草稿状态
+      try {
+        await OfflineDb.instance.clearAllCache();
+        await OfflineSyncService.instance.refreshDrafts();
+      } catch (e) {
+        debugPrint('[ServerIdentityGuard] clearAllCache error: $e');
+      }
 
       // 2. 抹除所有用户的房间/分类元数据快照
-      await MetaSnapshotStore.clearAllSnapshots();
+      try {
+        await MetaSnapshotStore.clearAllSnapshots();
+      } catch (e) {
+        debugPrint('[ServerIdentityGuard] clearAllSnapshots error: $e');
+      }
 
       // 3. 清空多媒体磁盘缓存
-      await MediaCacheManager.instance.clearAllCache();
+      try {
+        await MediaCacheManager.instance.clearAllCache();
+      } catch (e) {
+        debugPrint('[ServerIdentityGuard] clearMediaCache error: $e');
+      }
 
       // 4. 注销当前本地旧会话，防止过期 token 引发 401
-      await ApiService.instance.logout();
+      try {
+        await ApiService.instance.logout();
+      } catch (e) {
+        debugPrint('[ServerIdentityGuard] logout error: $e');
+      }
 
       // 5. 记录更新后的实例指纹
       await prefs.setString(_kKey, cleanId);
+
+      // 6. 通知 UI 安全跳转至登录页并弹出提示
+      if (ApiService.instance.onServerInstanceChanged != null) {
+        ApiService.instance.onServerInstanceChanged!.call();
+      } else {
+        ApiService.instance.onUnauthorized?.call();
+      }
 
       debugPrint('[ServerIdentityGuard] ✓ 本地脏缓存与旧会话已彻底抹除，环境已恢复纯净状态。');
       return true;

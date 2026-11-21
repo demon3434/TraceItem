@@ -22,6 +22,7 @@ class ApiService {
   String? _token;
   User? _currentUser;
   VoidCallback? onUnauthorized;
+  VoidCallback? onServerInstanceChanged;
 
   ApiService._internal() {
     _dio = Dio(
@@ -105,9 +106,9 @@ class ApiService {
       final res = await _dio.get('/auth/config');
       final data = res.data['data'] as Map<String, dynamic>?;
       if (data?['server_instance_id'] is String) {
-        unawaited(ServerIdentityGuard.instance.checkAndHandleInstanceChange(
+        await ServerIdentityGuard.instance.checkAndHandleInstanceChange(
           data!['server_instance_id'] as String,
-        ));
+        );
       }
       return data?['allow_public_registration'] as bool? ?? false;
     } catch (_) {
@@ -351,6 +352,7 @@ class ApiService {
     int? houseId,
     int? roomId,
     int? categoryId,
+    String? status,
     int page = 1,
     int pageSize = 30,
   }) async {
@@ -358,6 +360,7 @@ class ApiService {
       if (houseId != null) 'house_id': houseId,
       if (roomId != null) 'room_id': roomId,
       if (categoryId != null) 'category_id': categoryId,
+      if (status != null) 'status': status,
       'page': page,
       'page_size': pageSize,
     });
@@ -387,6 +390,16 @@ class ApiService {
 
   Future<Item> updateItem(int itemId, Map<String, dynamic> data) async {
     final res = await _dio.put('/items/$itemId', data: data);
+    return Item.fromJson(res.data['data']);
+  }
+
+  Future<Item> takeOutItem(int itemId, Map<String, dynamic> data) async {
+    final res = await _dio.post('/items/$itemId/take-out', data: data);
+    return Item.fromJson(res.data['data']);
+  }
+
+  Future<Item> putBackItem(int itemId, Map<String, dynamic> data) async {
+    final res = await _dio.post('/items/$itemId/put-back', data: data);
     return Item.fromJson(res.data['data']);
   }
 

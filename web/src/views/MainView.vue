@@ -99,6 +99,7 @@
             @delete="handleDeleteConfirm"
             @load-more="handleLoadMore"
             @retry-load-more="handleLoadMore"
+            @refresh="loadItems"
           />
         </div>
       </template>

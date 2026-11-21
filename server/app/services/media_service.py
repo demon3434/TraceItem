@@ -75,16 +75,17 @@ def process_and_save_image(file: UploadFile) -> Tuple[str, Optional[str], int, i
     )
     file_size = os.path.getsize(abs_path)
 
-    # 2. 生成极速小缩略图 (长边 300px)
-    thumb_ratio = 300 / max(new_w, new_h)
+    # 2. 生成高清小缩略图 (长边 600px，LANCZOS 锐利重采样，体积约 25~45KB)
+    target_thumb_edge = min(600, max(new_w, new_h))
+    thumb_ratio = target_thumb_edge / max(new_w, new_h)
     thumb_w = max(1, int(new_w * thumb_ratio))
     thumb_h = max(1, int(new_h * thumb_ratio))
-    img_thumb = img_resized.resize((thumb_w, thumb_h), Image.Resampling.BILINEAR)
+    img_thumb = img_resized.resize((thumb_w, thumb_h), Image.Resampling.LANCZOS)
 
     thumb_rel_path = rel_path.replace("images/", "thumbnails/images/").replace(".jpg", "_thumb.jpg")
     thumb_abs_path = settings.MEDIA_DIR / thumb_rel_path
     thumb_abs_path.parent.mkdir(parents=True, exist_ok=True)
-    img_thumb.save(thumb_abs_path, format="JPEG", quality=75, optimize=True)
+    img_thumb.save(thumb_abs_path, format="JPEG", quality=82, optimize=True)
 
     return rel_path, thumb_rel_path, file_size, new_w, new_h
 

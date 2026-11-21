@@ -18,9 +18,44 @@
           @preview="emit('preview', $event)"
           @edit="emit('edit', $event)"
           @delete="emit('delete', $event)"
+          @lifecycle="handleLifecycle"
+          @step-quantity="handleStepQuantity"
         />
       </div>
     </div>
+
+    <ItemTakeOutDialog
+      :is-open="showTakeOut"
+      :item="activeLifecycleItem"
+      @close="showTakeOut = false"
+      @saved="emit('refresh')"
+    />
+    <ItemPutBackDialog
+      :is-open="showPutBack"
+      :item="activeLifecycleItem"
+      @close="showPutBack = false"
+      @saved="emit('refresh')"
+    />
+    <ConfirmDialog
+      :is-open="zeroStep === 1"
+      title="数量已归零，是否删除？"
+      :message="`“${pendingZeroItem?.name || ''}”数量将变为 0。可选择直接删除，或保留数量 0。`"
+      confirm-text="删除物品"
+      cancel-text="保留 (数量 0)"
+      :is-danger="true"
+      @confirm="zeroStep = 2"
+      @cancel="keepZeroQuantity"
+    />
+    <ConfirmDialog
+      :is-open="zeroStep === 2"
+      title="再次确认删除？"
+      :message="`删除后将永久清理“${pendingZeroItem?.name || ''}”及其附件，无法恢复！`"
+      confirm-text="确认彻底删除"
+      cancel-text="取消"
+      :is-danger="true"
+      @confirm="executeZeroDelete"
+      @cancel="keepZeroQuantity"
+    />
 
     <!-- 触底增量加载哨兵与底部状态提示 -->
     <div ref="sentinelRef" class="w-full py-6 flex items-center justify-center">
@@ -58,8 +93,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import type { Item } from "@/types";
+import { deleteItemApi, updateItemApi } from "@/api";
+import { useToastStore } from "@/stores/toast";
 import { Loader2, RefreshCw } from "lucide-vue-next";
 import ItemCard from "./ItemCard.vue";
+import ItemTakeOutDialog from "./ItemTakeOutDialog.vue";
+import ItemPutBackDialog from "./ItemPutBackDialog.vue";
+import ConfirmDialog from "../ui/ConfirmDialog.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -85,7 +125,72 @@ const emit = defineEmits<{
   (e: "delete", item: Item): void;
   (e: "load-more"): void;
   (e: "retry-load-more"): void;
+  (e: "refresh"): void;
 }>();
+
+const toastStore = useToastStore();
+const activeLifecycleItem = ref<Item | null>(null);
+const showTakeOut = ref(false);
+const showPutBack = ref(false);
+const pendingZeroItem = ref<Item | null>(null);
+const zeroStep = ref<0 | 1 | 2>(0);
+const updatingQtyIds = new Set<number>();
+
+function handleLifecycle(item: Item) {
+  activeLifecycleItem.value = item;
+  if (item.status === "in_use") {
+    showPutBack.value = true;
+  } else {
+    showTakeOut.value = true;
+  }
+}
+
+async function handleStepQuantity(payload: { item: Item; delta: number }) {
+  const { item, delta } = payload;
+  if (updatingQtyIds.has(item.id)) return;
+  const next = item.quantity + delta;
+  if (next < 0) return;
+  if (delta < 0 && next === 0) {
+    pendingZeroItem.value = item;
+    zeroStep.value = 1;
+    return;
+  }
+  await persistQuantity(item, next);
+}
+
+async function keepZeroQuantity() {
+  zeroStep.value = 0;
+  if (pendingZeroItem.value) {
+    await persistQuantity(pendingZeroItem.value, 0);
+    pendingZeroItem.value = null;
+  }
+}
+
+async function persistQuantity(item: Item, nextQty: number) {
+  updatingQtyIds.add(item.id);
+  try {
+    await updateItemApi(item.id, { quantity: nextQty });
+    emit("refresh");
+  } catch (err: any) {
+    toastStore.error("更新数量失败", err.message);
+  } finally {
+    updatingQtyIds.delete(item.id);
+  }
+}
+
+async function executeZeroDelete() {
+  const target = pendingZeroItem.value;
+  zeroStep.value = 0;
+  pendingZeroItem.value = null;
+  if (!target) return;
+  try {
+    await deleteItemApi(target.id);
+    toastStore.success("物品已彻底清理");
+    emit("refresh");
+  } catch (err: any) {
+    toastStore.error("删除失败", err.message);
+  }
+}
 
 const rootRef = ref<HTMLElement | null>(null);
 const sentinelRef = ref<HTMLElement | null>(null);

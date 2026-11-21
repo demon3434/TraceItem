@@ -130,6 +130,7 @@ export async function getItemsApi(params: {
   house_id?: number;
   room_id?: number;
   category_id?: number;
+  status?: "stored" | "in_use";
   page?: number;
   page_size?: number;
 }): Promise<PaginatedData<Item>> {
@@ -149,6 +150,36 @@ export async function createItemApi(data: Partial<Item> & { tag_names?: string[]
 
 export async function updateItemApi(id: number, data: Partial<Item> & { tag_names?: string[]; attachments?: any[] }): Promise<Item> {
   const res = await api.put<ApiResponse<Item>>(`/items/${id}`, data);
+  return res.data.data;
+}
+
+export async function takeOutItemApi(
+  id: number,
+  data: {
+    house_id: number;
+    room_id: number;
+    location_detail: string;
+    attachments: any[];
+    expected_version?: number;
+  },
+): Promise<Item> {
+  const res = await api.post<ApiResponse<Item>>(`/items/${id}/take-out`, data);
+  return res.data.data;
+}
+
+export async function putBackItemApi(
+  id: number,
+  data: {
+    restore_original: boolean;
+    house_id?: number;
+    room_id?: number;
+    location_detail?: string;
+    added_storage_attachments?: any[];
+    removed_attachment_paths?: string[];
+    expected_version?: number;
+  },
+): Promise<Item> {
+  const res = await api.post<ApiResponse<Item>>(`/items/${id}/put-back`, data);
   return res.data.data;
 }
 

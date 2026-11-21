@@ -153,6 +153,7 @@ def get_user_items(
     house_id: Optional[int] = None,
     room_id: Optional[int] = None,
     category_id: Optional[int] = None,
+    item_status: Optional[str] = None,
     skip: int = 0,
     limit: int = 30,
 ) -> Tuple[List[Item], int]:
@@ -164,12 +165,16 @@ def get_user_items(
         query = query.filter(Item.room_id == room_id)
     if category_id:
         query = query.filter(Item.category_id == category_id)
+    if item_status in ("stored", "in_use"):
+        query = query.filter(Item.status == item_status)
 
     total = query.count()
     items = (
         query.options(
             joinedload(Item.house),
             joinedload(Item.room),
+            joinedload(Item.storage_house),
+            joinedload(Item.storage_room),
             joinedload(Item.category),
             joinedload(Item.tags),
             joinedload(Item.attachments),
@@ -190,6 +195,8 @@ def get_user_item_by_id(db: Session, user_id: int, item_id: int) -> Item:
         .options(
             joinedload(Item.house),
             joinedload(Item.room),
+            joinedload(Item.storage_house),
+            joinedload(Item.storage_room),
             joinedload(Item.tags),
             joinedload(Item.attachments),
         )
@@ -295,17 +302,25 @@ def update_user_item(
         item.tags = resolve_tags(db, user_id, list(val_tags))
         touched_fields.add("tag_names")
 
+    active_scene = "in_use" if item.status == "in_use" else "storage"
     if payload.added_attachments is not None or payload.removed_attachment_paths is not None:
         removed_set = set(payload.removed_attachment_paths or [])
         if removed_set:
             for att_row in list(item.attachments):
-                if att_row.file_path in removed_set:
+                if (att_row.scene or "storage") == active_scene and att_row.file_path in removed_set:
                     delete_physical_attachment(att_row.file_path, att_row.thumbnail_path)
                     db.delete(att_row)
             db.flush()
             touched_fields.add("attachments")
-        existing_paths = {a.file_path for a in item.attachments if a.file_path not in removed_set}
-        max_order = max((a.display_order or 0 for a in item.attachments), default=0)
+        existing_paths = {
+            a.file_path
+            for a in item.attachments
+            if (a.scene or "storage") == active_scene and a.file_path not in removed_set
+        }
+        max_order = max(
+            (a.display_order or 0 for a in item.attachments if (a.scene or "storage") == active_scene),
+            default=0,
+        )
         for att in (payload.added_attachments or []):
             if att.file_path in existing_paths:
                 continue
@@ -314,25 +329,31 @@ def update_user_item(
                 Attachment(
                     item_id=item.id,
                     media_type=att.media_type,
+                    scene=active_scene,
                     file_path=att.file_path,
                     thumbnail_path=att.thumbnail_path,
                     file_size=att.file_size,
                     duration_seconds=att.duration_seconds,
                     width=att.width,
                     height=att.height,
-                    display_order=att.display_order or max_order,
+                    display_order=max_order,
                 )
             )
             touched_fields.add("attachments")
     elif payload.attachments is not None:
-        old_paths = {(a.file_path, a.thumbnail_path) for a in item.attachments}
+        active_atts = [a for a in item.attachments if (a.scene or "storage") == active_scene]
+        old_paths = {(a.file_path, a.thumbnail_path) for a in active_atts}
         new_file_paths = {att.file_path for att in payload.attachments}
-        db.query(Attachment).filter(Attachment.item_id == item.id).delete()
+        db.query(Attachment).filter(
+            Attachment.item_id == item.id,
+            Attachment.scene == active_scene,
+        ).delete()
         for idx, att in enumerate(payload.attachments):
             db.add(
                 Attachment(
                     item_id=item.id,
                     media_type=att.media_type,
+                    scene=active_scene,
                     file_path=att.file_path,
                     thumbnail_path=att.thumbnail_path,
                     file_size=att.file_size,

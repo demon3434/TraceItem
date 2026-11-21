@@ -27,7 +27,7 @@ class House(Base):
     # 关联
     owner = relationship("User", back_populates="houses")
     rooms = relationship("Room", back_populates="house", cascade="all, delete-orphan")
-    items = relationship("Item", back_populates="house", cascade="all, delete-orphan")
+    items = relationship("Item", foreign_keys="Item.house_id", back_populates="house", cascade="all, delete-orphan")
 
 
 class Room(Base):
@@ -56,5 +56,5 @@ class Room(Base):
     # 关联
     owner = relationship("User", back_populates="rooms")
     house = relationship("House", back_populates="rooms")
-    items = relationship("Item", back_populates="room", cascade="all, delete-orphan")
+    items = relationship("Item", foreign_keys="Item.room_id", back_populates="room", cascade="all, delete-orphan")
 

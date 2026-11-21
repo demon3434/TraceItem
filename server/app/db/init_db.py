@@ -78,10 +78,28 @@ def init_db() -> None:
             conn.execute(text("ALTER TABLE items ADD COLUMN field_versions_json TEXT NOT NULL DEFAULT '{}';"))
         if item_cols and "client_uuid" not in item_cols:
             conn.execute(text("ALTER TABLE items ADD COLUMN client_uuid VARCHAR(64);"))
+        if item_cols and "status" not in item_cols:
+            conn.execute(text("ALTER TABLE items ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'stored';"))
+        if item_cols and "storage_house_id" not in item_cols:
+            conn.execute(text("ALTER TABLE items ADD COLUMN storage_house_id INTEGER;"))
+        if item_cols and "storage_room_id" not in item_cols:
+            conn.execute(text("ALTER TABLE items ADD COLUMN storage_room_id INTEGER;"))
+        if item_cols and "storage_location_detail" not in item_cols:
+            conn.execute(text("ALTER TABLE items ADD COLUMN storage_location_detail TEXT NOT NULL DEFAULT '';"))
+        if item_cols and "status_updated_at" not in item_cols:
+            conn.execute(text("ALTER TABLE items ADD COLUMN status_updated_at DATETIME;"))
         if item_cols:
             conn.execute(
                 text("CREATE UNIQUE INDEX IF NOT EXISTS uq_item_user_client_uuid ON items(user_id, client_uuid);")
             )
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_items_status ON items(status);"))
+
+        # 附件场景字段 scene 兼容性迁移 ('storage' | 'in_use')
+        att_cols = [row[1] for row in conn.execute(text("PRAGMA table_info(attachments);")).fetchall()]
+        if att_cols and "scene" not in att_cols:
+            conn.execute(text("ALTER TABLE attachments ADD COLUMN scene VARCHAR(20) NOT NULL DEFAULT 'storage';"))
+        if att_cols:
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_attachments_scene ON attachments(scene);"))
 
     # 2. 创建并初始化 FTS5 全文索引虚拟表与同步触发器
     with engine.begin() as conn:

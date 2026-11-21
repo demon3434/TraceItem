@@ -42,12 +42,17 @@ void main() {
   });
 
   group('NetworkRouteManager 路由切换与探针测试', () {
-    test('蜂窝网络快轨跳过内网探测直接切至外网', () async {
+    test('蜂窝网络快轨跳过内网探测直接切至外网并校验外网实例指纹', () async {
       SharedPreferences.setMockInitialValues({});
-      var probeCalled = false;
+      var intranetProbeCalled = false;
+      var extranetProbeCalled = false;
       final dio = Dio()
         ..httpClientAdapter = _FakeProbeAdapter((opts) async {
-          probeCalled = true;
+          if (opts.uri.host == '192.168.7.186') {
+            intranetProbeCalled = true;
+          } else {
+            extranetProbeCalled = true;
+          }
           return _jsonBody(200, 'ok');
         });
 
@@ -67,7 +72,8 @@ void main() {
       final active = await mgr.detectAndSwitchBestRoute();
       expect(active, 'https://trace.example.com');
       expect(mgr.currentRouteType, ActiveRouteType.extranet);
-      expect(probeCalled, isFalse);
+      expect(intranetProbeCalled, isFalse);
+      expect(extranetProbeCalled, isTrue);
     });
 
     test('WiFi下内网不可达且外网慢响应(>1.5s)走根路径兜底时成功切至外网', () async {

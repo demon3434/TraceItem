@@ -7,12 +7,21 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
+import { getAuthConfigApi } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import ToastContainer from "@/components/ui/ToastContainer.vue";
 
 const authStore = useAuthStore();
 
 onMounted(async () => {
+  try {
+    const cfg = await getAuthConfigApi();
+    if (authStore.checkServerInstance(cfg.server_instance_id)) {
+      return;
+    }
+  } catch {
+    // 忽略启动时网络探测失败，交由后续接口拦截器处理
+  }
   if (authStore.isAuthenticated) {
     // 每次应用启动或刷新，自动向后端同步最新的用户资料与昵称，杜绝浏览器 LocalStorage 历史缓存残留
     await authStore.fetchCurrentUser();

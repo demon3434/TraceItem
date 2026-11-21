@@ -237,7 +237,7 @@ class NetworkRouteManager extends ChangeNotifier {
     _debounceTimer?.cancel();
   }
 
-  void _onConnectivityChanged(List<ConnectivityResult> results) {
+  Future<void> _onConnectivityChanged(List<ConnectivityResult> results) async {
     _debounceTimer?.cancel();
     final hasNet = results.any((r) => r != ConnectivityResult.none);
     if (!hasNet) {
@@ -261,7 +261,8 @@ class NetworkRouteManager extends ChangeNotifier {
     if (_isCellularOnly(results) &&
         isPrivateNetwork(_intranetUrl) &&
         _extranetUrl.isNotEmpty) {
-      _applyActiveUrl(_extranetUrl, '🚀 蜂窝网络快轨：已秒切外网线路');
+      await _applyActiveUrl(_extranetUrl, '🚀 蜂窝网络快轨：已秒切外网线路');
+      await checkUrlHealthy(_extranetUrl, timeoutMs: 3500);
       return;
     }
 
@@ -289,6 +290,7 @@ class NetworkRouteManager extends ChangeNotifier {
           isPrivateNetwork(_intranetUrl) &&
           _extranetUrl.isNotEmpty) {
         await _applyActiveUrl(_extranetUrl, '🚀 蜂窝网络快轨：已切换外网通道');
+        await checkUrlHealthy(_extranetUrl, timeoutMs: 3500);
         return _extranetUrl;
       }
     } catch (_) {}
@@ -299,7 +301,10 @@ class NetworkRouteManager extends ChangeNotifier {
 
     try {
       if (_intranetUrl.isNotEmpty && _extranetUrl.isNotEmpty) {
-        final intraFuture = checkUrlHealthy(_intranetUrl, timeoutMs: 600);
+        final intraFuture = checkUrlHealthy(
+          _intranetUrl,
+          timeoutMs: isManualTrigger ? 2500 : 600,
+        );
         final extraFuture = checkUrlHealthy(_extranetUrl, timeoutMs: 3500);
         final intraOk = await intraFuture;
         if (intraOk) {
@@ -312,7 +317,10 @@ class NetworkRouteManager extends ChangeNotifier {
           return _extranetUrl;
         }
       } else if (_intranetUrl.isNotEmpty) {
-        if (await checkUrlHealthy(_intranetUrl, timeoutMs: 800)) {
+        if (await checkUrlHealthy(
+          _intranetUrl,
+          timeoutMs: isManualTrigger ? 3500 : 800,
+        )) {
           await _applyActiveUrl(_intranetUrl, '✨ 家庭局域网连通正常');
           return _intranetUrl;
         }
@@ -390,7 +398,7 @@ class NetworkRouteManager extends ChangeNotifier {
         if (res.statusCode != null &&
             res.statusCode! >= 200 &&
             res.statusCode! < 300) {
-          _tryInspectServerInstanceId(res.data);
+          await _tryInspectServerInstanceId(res.data);
           return true;
         }
       } on DioException catch (e) {
@@ -431,7 +439,7 @@ class NetworkRouteManager extends ChangeNotifier {
         if (res.statusCode != null &&
             res.statusCode! >= 200 &&
             res.statusCode! < 300) {
-          _tryInspectServerInstanceId(res.data);
+          await _tryInspectServerInstanceId(res.data);
           return UrlTestResult(
             ok: true,
             latencyMs: sw.elapsedMilliseconds,
@@ -448,16 +456,19 @@ class NetworkRouteManager extends ChangeNotifier {
     );
   }
 
-  void _tryInspectServerInstanceId(dynamic data) {
-    if (data is Map) {
-      final sub = data['data'];
-      if (sub is Map && sub['server_instance_id'] is String) {
-        unawaited(ServerIdentityGuard.instance.checkAndHandleInstanceChange(
-          sub['server_instance_id'] as String,
-        ));
+  Future<void> _tryInspectServerInstanceId(dynamic data) async {
+    try {
+      if (data is Map) {
+        final sub = data['data'];
+        if (sub is Map && sub['server_instance_id'] is String) {
+          await ServerIdentityGuard.instance.checkAndHandleInstanceChange(
+            sub['server_instance_id'] as String,
+          );
+        }
       }
+    } catch (e) {
+      debugPrint('[NetworkRouteManager] inspect server_instance_id error: $e');
     }
-  }
   }
 
   String resolveMediaUrl(String? path) {

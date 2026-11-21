@@ -3,6 +3,8 @@ import { ref, computed } from "vue";
 import type { User } from "../types";
 import { getMeApi } from "../api";
 
+const SERVER_INSTANCE_KEY = "traceitem_server_instance_id";
+
 export const useAuthStore = defineStore("auth", () => {
   const token = ref<string>(localStorage.getItem("traceitem_token") || "");
   const user = ref<User | null>(
@@ -44,7 +46,27 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
     localStorage.removeItem("traceitem_token");
     localStorage.removeItem("traceitem_user");
-    window.location.href = "/login";
+    if (window.location.pathname !== "/login") {
+      window.location.href = "/login";
+    }
+  }
+
+  function checkServerInstance(serverInstanceId?: string): boolean {
+    if (!serverInstanceId || !serverInstanceId.trim()) return false;
+    const cleanId = serverInstanceId.trim();
+    const lastId = localStorage.getItem(SERVER_INSTANCE_KEY);
+    const isLegacySessionWithoutFingerprint = !lastId && !!token.value;
+
+    if ((lastId && lastId !== cleanId) || isLegacySessionWithoutFingerprint) {
+      localStorage.setItem(SERVER_INSTANCE_KEY, cleanId);
+      logout();
+      return true;
+    }
+
+    if (lastId !== cleanId) {
+      localStorage.setItem(SERVER_INSTANCE_KEY, cleanId);
+    }
+    return false;
   }
 
   return {
@@ -55,6 +77,7 @@ export const useAuthStore = defineStore("auth", () => {
     setAuth,
     updateUser,
     fetchCurrentUser,
+    checkServerInstance,
     logout,
   };
 });

@@ -1,10 +1,37 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+import uuid
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.base import Base
 from app.db.session import SessionLocal, engine
 from app.models.user import User
+
+
+def get_or_create_server_instance_id() -> str:
+    """获取或初始化持久化的服务器数据库实例指纹 (UUID)"""
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS system_settings (
+                    key VARCHAR(64) PRIMARY KEY,
+                    value TEXT NOT NULL
+                );
+                """
+            )
+        )
+        row = conn.execute(
+            text("SELECT value FROM system_settings WHERE key = 'server_instance_id';")
+        ).fetchone()
+        if row and row[0]:
+            return str(row[0])
+        new_id = str(uuid.uuid4())
+        conn.execute(
+            text("INSERT INTO system_settings (key, value) VALUES ('server_instance_id', :val);"),
+            {"val": new_id},
+        )
+        return new_id
 
 
 def init_db() -> None:
@@ -123,6 +150,9 @@ def init_db() -> None:
             db.commit()
         from app.services.fts_indexer import rebuild_all_items_fts
         rebuild_all_items_fts(db)
+
+        # 5. 确保全局数据库实例指纹就绪
+        get_or_create_server_instance_id()
     finally:
         db.close()
 

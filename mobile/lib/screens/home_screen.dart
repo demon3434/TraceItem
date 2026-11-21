@@ -249,8 +249,18 @@ class HomeScreenState extends State<HomeScreen> {
         _items = res['items'] as List<Item>;
         _hasMore = _items.length < (res['total'] as int);
         final uid = ApiService.instance.currentUser?.id;
-        if (uid != null && _items.isNotEmpty) {
-          OfflineDb.instance.upsertCachedItems(uid, _items);
+        if (uid != null) {
+          if (_items.isNotEmpty) {
+            OfflineDb.instance.upsertCachedItems(uid, _items);
+          } else if (_currentPage == 1 &&
+              _searchController.text.trim().isEmpty) {
+            OfflineDb.instance.clearScopeCache(
+              uid,
+              houseId: _activeHouse?.id,
+              roomId: _activeRoom?.id,
+              categoryId: _selectedCategory?.id,
+            );
+          }
         }
       }
       if (mounted && epoch == _requestEpoch) setState(() {});

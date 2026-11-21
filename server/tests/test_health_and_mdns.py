@@ -58,6 +58,14 @@ def test_health_and_api_health_endpoints(monkeypatch, tmp_path):
                 assert payload["code"] == 0
                 assert payload["message"] == "healthy"
                 assert payload["data"]["status"] == "online"
+                assert "server_instance_id" in payload["data"]
+                assert len(payload["data"]["server_instance_id"]) >= 32
+
+            config_res = client.get("/api/auth/config")
+            assert config_res.status_code == 200
+            config_payload = config_res.json()
+            assert "server_instance_id" in config_payload["data"]
+            assert config_payload["data"]["server_instance_id"] == payload["data"]["server_instance_id"]
     finally:
         test_engine.dispose()
 

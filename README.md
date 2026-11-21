@@ -21,16 +21,70 @@
 
 ## 🚀 快速部署（Docker Compose 推荐）
 
-> 镜像采用多阶段构建，自动在容器内编译 Web 前端并集成到服务端，**宿主机只需安装 Docker / Docker Compose，无需提前安装 Node.js 或 Python**。
+> 宿主机只需安装 Docker 与 Docker Compose 插件，数据库 (SQLite 3 WAL) 与前端资源已全面容器化，无需在宿主机额外配置 Node.js 或 Python 环境。
 
-### 1. 克隆仓库
+### 方案 A：直接拉取预构建镜像一键部署（极速免编译，推荐家用 NAS / 玩客云 / 软路由）
 
+无需拉取完整源码和在低配设备上耗时编译，仅需准备一个工作目录与 `docker-compose.yml`：
+
+#### 1. 创建或使用部署编排文件
+仓库已内置 [docker-compose.aliyun.yml](docker-compose.aliyun.yml)；你也可以在目标服务器任意工作目录新建 `docker-compose.yml`，粘贴如下内容：
+
+```yaml
+services:
+  traceitem:
+    image: crpi-tyyqcg8a2rpatesk.cn-shanghai.personal.cr.aliyuncs.com/zixidaxian/traceitem-app:latest
+    container_name: traceitem-app
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8085}:8000"
+    volumes:
+      - ./data:/app/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-traceitem-secure-secret-key-change-in-production-2026}
+      - TZ=Asia/Shanghai
+      - SERVICE_ADVERTISE_HOST=${SERVICE_ADVERTISE_HOST:-}
+      - SERVICE_ADVERTISE_PORT=${SERVICE_ADVERTISE_PORT:-8085}
+      - DEFAULT_ADMIN_USERNAME=${DEFAULT_ADMIN_USERNAME:-admin}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD:-admin123}
+      - ALLOW_PUBLIC_REGISTRATION=${ALLOW_PUBLIC_REGISTRATION:-true}
+      - BACKUP_MAX_RETENTION_COUNT=${BACKUP_MAX_RETENTION_COUNT:-3}
+    networks:
+      - traceitem_mdns
+
+networks:
+  traceitem_mdns:
+    name: traceitem_mdns
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-traceitem
+```
+
+#### 2. 秒级启动服务
 ```bash
-git clone <你的仓库地址>
+# 如果使用内置的 docker-compose.aliyun.yml：
+docker compose -f docker-compose.aliyun.yml up -d
+
+# 或者如果保存为了当前目录的 docker-compose.yml：
+docker compose up -d
+```
+
+---
+
+### 方案 B：源码多阶段构建部署（适合二次开发与定制）
+
+#### 1. 克隆仓库
+```bash
+git clone https://github.com/demon3434/TraceItem.git
 cd TraceItem
 ```
 
-### 2. 配置环境变量
+#### 2. 配置环境变量
 项目根目录提供了环境变量模板 [.env.example](.env.example)，复制一份为 `.env` 并按需修改：
 
 ```bash
@@ -48,6 +102,13 @@ cp .env.example .env
 | `DEFAULT_ADMIN_PASSWORD` | `admin123` | 首次启动自动初始化的管理员密码（登录后请及时修改） |
 | `SECRET_KEY` | 内置默认密钥 | JWT 登录令牌签名密钥，**公网/生产环境请务必修改为随机长字符串** |
 
+#### 3. 启动本地多阶段构建
+```bash
+docker compose up -d --build
+```
+
+---
+
 ### 3. （可选）配置 Linux 宿主机 mDNS 局域网自动发现
 若希望手机 App 在同一家庭 WiFi 下“一键自动发现”服务端地址，需在 **Linux 宿主机**上运行一次 [scripts/setup_avahi_traceitem.sh](scripts/setup_avahi_traceitem.sh)（脚本会自动安装 `avahi-daemon`、创建 `br-traceitem` 桥接网络并开启组播反射）：
 
@@ -62,25 +123,22 @@ cp .env.example .env
 
 > 💡 该步骤只需在宿主机执行一次；若跳过此步（或使用 Windows/macOS 宿主机），图觅服务依然可以正常使用，仅需在手机 App 首次连接时手动输入 `http://<服务器IP>:8085`。
 
-### 4. 构建并启动容器
+---
 
-```bash
-docker compose up -d --build
-```
+### 4. 服务访问与验证
 
 启动后即可访问：
 - **Web 管理界面**：`http://<服务器IP>:8085/`
 - **Swagger API 文档**：`http://<服务器IP>:8085/docs`
-- **健康检查**：`http://<服务器IP>:8085/health`
+- **健康检查与指纹接口**：`http://<服务器IP>:8085/api/health`
 
-#### 🔐 默认管理员账号
-首次全新部署启动后，系统会自动初始化管理员账号：
-- **用户名**：`admin`
-- **默认密码**：`admin123`
-
-> ⚠️ 请在首次登录后及时在页面右上角修改管理员密码（如需自定义初始账号密码，可在 `.env` 或 `docker-compose.yml` 中配置 `DEFAULT_ADMIN_USERNAME` 与 `DEFAULT_ADMIN_PASSWORD`）。
-
-数据库与上传的多媒体文件会持久化保存在宿主机的 `./data` 目录中。
+#### 🔐 默认管理员账号与数据持久化
+- **默认用户名**：`admin`
+- **默认初始密码**：`admin123`
+- **容器与数据命名**：
+  - 容器默认命名为 `traceitem-app`（如需自定义容器名，直接调整 Compose 文件中的 `container_name` 即可）。
+  - 数据库与上传的多媒体文件会持久化保存在宿主机的 `./data` 目录中。
+  - 首次全新启动时数据库保持纯净状态（仅生成 `admin` 管理员与系统基础分类模板，0 测试用户、0 房屋、0 物品）。
 
 ---
 

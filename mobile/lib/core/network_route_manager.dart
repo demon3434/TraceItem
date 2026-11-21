@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'server_identity_guard.dart';
 
 enum ActiveRouteType {
   unconfigured,
@@ -389,6 +390,7 @@ class NetworkRouteManager extends ChangeNotifier {
         if (res.statusCode != null &&
             res.statusCode! >= 200 &&
             res.statusCode! < 300) {
+          _tryInspectServerInstanceId(res.data);
           return true;
         }
       } on DioException catch (e) {
@@ -429,6 +431,7 @@ class NetworkRouteManager extends ChangeNotifier {
         if (res.statusCode != null &&
             res.statusCode! >= 200 &&
             res.statusCode! < 300) {
+          _tryInspectServerInstanceId(res.data);
           return UrlTestResult(
             ok: true,
             latencyMs: sw.elapsedMilliseconds,
@@ -443,6 +446,18 @@ class NetworkRouteManager extends ChangeNotifier {
       latencyMs: 0,
       message: '无法连接服务器，请检查 IP/域名或端口',
     );
+  }
+
+  void _tryInspectServerInstanceId(dynamic data) {
+    if (data is Map) {
+      final sub = data['data'];
+      if (sub is Map && sub['server_instance_id'] is String) {
+        unawaited(ServerIdentityGuard.instance.checkAndHandleInstanceChange(
+          sub['server_instance_id'] as String,
+        ));
+      }
+    }
+  }
   }
 
   String resolveMediaUrl(String? path) {

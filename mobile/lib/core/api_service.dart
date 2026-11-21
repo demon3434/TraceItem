@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/painting.dart';
@@ -6,7 +7,10 @@ import 'api_route_interceptor.dart';
 import 'app_logger.dart';
 import 'auth_storage.dart';
 import 'media_cache_manager.dart';
+import 'meta_snapshot_store.dart';
 import 'network_route_manager.dart';
+import 'offline_db.dart';
+import 'server_identity_guard.dart';
 import 'theme_controller.dart';
 
 part 'api_service_media.dart';
@@ -100,6 +104,11 @@ class ApiService {
     try {
       final res = await _dio.get('/auth/config');
       final data = res.data['data'] as Map<String, dynamic>?;
+      if (data?['server_instance_id'] is String) {
+        unawaited(ServerIdentityGuard.instance.checkAndHandleInstanceChange(
+          data!['server_instance_id'] as String,
+        ));
+      }
       return data?['allow_public_registration'] as bool? ?? false;
     } catch (_) {
       return false;
@@ -156,9 +165,14 @@ class ApiService {
   }
 
   Future<void> logout() async {
+    final uid = _currentUser?.id;
     _token = null;
     _currentUser = null;
     await AuthStorage.clearSession();
+    if (uid != null) {
+      await OfflineDb.instance.clearUserCache(uid);
+      await MetaSnapshotStore.clearSnapshot(uid);
+    }
     await MediaCacheManager.instance.switchUser(null);
     await ThemeController.instance.switchUser(null);
     PaintingBinding.instance.imageCache.clear();

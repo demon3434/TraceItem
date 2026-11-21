@@ -1,0 +1,33 @@
+services:
+  traceitem:
+    image: crpi-tyyqcg8a2rpatesk.cn-shanghai.personal.cr.aliyuncs.com/zixidaxian/traceitem-app:latest
+    container_name: traceitem-app
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8085}:8000"
+    volumes:
+      - ./data:/app/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-traceitem-secure-secret-key-change-in-production-2026}
+      - TZ=Asia/Shanghai
+      - SERVICE_ADVERTISE_HOST=${SERVICE_ADVERTISE_HOST:-}
+      - SERVICE_ADVERTISE_PORT=${SERVICE_ADVERTISE_PORT:-8085}
+      - DEFAULT_ADMIN_USERNAME=${DEFAULT_ADMIN_USERNAME:-admin}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD:-admin123}
+      - ALLOW_PUBLIC_REGISTRATION=${ALLOW_PUBLIC_REGISTRATION:-true}
+      - BACKUP_MAX_RETENTION_COUNT=${BACKUP_MAX_RETENTION_COUNT:-3}
+    networks:
+      - traceitem_mdns
+
+networks:
+  traceitem_mdns:
+    name: traceitem_mdns
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-traceitem
+

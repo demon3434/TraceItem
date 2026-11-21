@@ -158,9 +158,11 @@ def list_active_users(
 
 @router.get("/config", response_model=ApiResponse[dict])
 def get_auth_config():
-    """获取公开认证配置 (如是否开放注册)"""
+    """获取公开认证配置 (如是否开放注册、数据库实例指纹)"""
+    from app.db.init_db import get_or_create_server_instance_id
     return ApiResponse(data={
         "allow_public_registration": settings.ALLOW_PUBLIC_REGISTRATION,
+        "server_instance_id": get_or_create_server_instance_id(),
     })
 
 

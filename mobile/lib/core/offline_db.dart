@@ -409,4 +409,47 @@ class OfflineDb {
       whereArgs: [userId, itemId],
     );
   }
+
+  Future<void> clearAllCache() async {
+    final db = await _getDb();
+    await db.delete('cached_items');
+    await db.delete('offline_outbox');
+  }
+
+  Future<void> clearUserCache(int userId) async {
+    final db = await _getDb();
+    await db.delete(
+      'cached_items',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<void> clearScopeCache(
+    int userId, {
+    int? houseId,
+    int? roomId,
+    int? categoryId,
+  }) async {
+    final db = await _getDb();
+    final whereParts = <String>['user_id = ?'];
+    final args = <Object?>[userId];
+    if (houseId != null) {
+      whereParts.add('house_id = ?');
+      args.add(houseId);
+    }
+    if (roomId != null) {
+      whereParts.add('room_id = ?');
+      args.add(roomId);
+    }
+    if (categoryId != null) {
+      whereParts.add('category_id = ?');
+      args.add(categoryId);
+    }
+    await db.delete(
+      'cached_items',
+      where: whereParts.join(' AND '),
+      whereArgs: args,
+    );
+  }
 }

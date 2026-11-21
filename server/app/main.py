@@ -89,6 +89,7 @@ app.mount("/media", StaticFiles(directory=settings.MEDIA_DIR), name="media")
 @app.get("/api/health", tags=["基础巡检"])
 def health_check():
     """服务健康检查接口"""
+    from app.db.init_db import get_or_create_server_instance_id
     return ApiResponse(
         code=0,
         message="healthy",
@@ -96,6 +97,7 @@ def health_check():
             "app_name": settings.APP_NAME,
             "version": settings.VERSION,
             "status": "online",
+            "server_instance_id": get_or_create_server_instance_id(),
         },
     )
 

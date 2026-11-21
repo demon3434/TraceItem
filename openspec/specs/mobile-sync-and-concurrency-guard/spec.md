@@ -123,3 +123,10 @@
 #### Scenario: 后台静默刷新遇离线或弱网时不覆盖已渲染缓存
 - **WHEN** 首页已完成本地缓存首屏渲染，但后台静默刷新因离线或网络超时失败
 - **THEN** 首页 SHALL 保持当前已渲染的本地缓存数据可见不被清空，仅通过 `CustomDialogs.showToast` 给出轻量提示
+
+### Requirement: Empty Remote Item Response Cache Invalidation
+当移动端物品寻宝首页拉取远端物品列表返回为空（且当前为第 1 页、无搜索关键字过滤）时，移动端 SHALL 显式清理本地 SQLite 离线数据库（`cached_items`）中对应筛选维度的缓存记录，严禁保留已被清空或不存在的残留脏数据。
+
+#### Scenario: 云端空间为空时自动清理本地残留缓存
+- **WHEN** 移动端拉取当前房屋或默认空间的第 1 页物品，服务端明确返回空列表（total 为 0）
+- **THEN** 移动端清除本地数据库中当前用户对应房屋/范围的 `cached_items` 记录，界面展示空状态而非历史残留物品

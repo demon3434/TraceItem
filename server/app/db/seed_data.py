@@ -355,4 +355,9 @@ def seed():
 
 
 if __name__ == "__main__":
+    import sys
+    if "--confirm-dev-only" not in sys.argv:
+        print(" [警告] seed_data 仅供本地开发调试注入 mock 物品使用！")
+        print("  为防止生产或新部署环境数据污染，必须显式附加参数: python seed_data.py --confirm-dev-only")
+        sys.exit(1)
     seed()

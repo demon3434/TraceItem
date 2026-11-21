@@ -46,5 +46,18 @@ class MetaSnapshotStore {
       return null;
     }
   }
+
+  static Future<void> clearSnapshot(int userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('$_kPrefix$userId');
+  }
+
+  static Future<void> clearAllSnapshots() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((k) => k.startsWith(_kPrefix)).toList();
+    for (final k in keys) {
+      await prefs.remove(k);
+    }
+  }
 }
 
